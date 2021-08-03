@@ -1,4 +1,3 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <queue>
 #include <algorithm>
@@ -9,87 +8,87 @@ struct bead {
 };
 
 bead start;
-char map[10][11]; //¹öÆÛ¶§¹®
-
+int n, m;
+char map[10][11];
 
 int BFS() {
 	const int dx[4] = { -1,0,1,0 };
 	const int dy[4] = { 0,1,0,-1 };
-	
 	bool visited[10][10][10][10] = { false, };
 	queue<bead> que;
 	que.push(start);
 	visited[start.ry][start.rx][start.by][start.bx] = true;
-	
+
 	int ret = -1;
 	while (!que.empty()) {
 		bead cur = que.front();
 		que.pop();
 
-		if (cur.cnt > 10)
+		if (cur.cnt > 10) {
 			break;
+		}
 
 		if (map[cur.ry][cur.rx] == 'O' && map[cur.by][cur.bx] != 'O') {
 			ret = cur.cnt;
 			break;
 		}
 
-		for (int i = 0; i < 4; i++) {
+		for (int dir = 0; dir < 4; dir++) {
 			int move_ry = cur.ry;
 			int move_rx = cur.rx;
 			int move_by = cur.by;
 			int move_bx = cur.bx;
 
-			// °è¼Ó ¿òÁ÷¿©¾ßÇÏ¹Ç·Î
+			//ê³µì›€ì§ì„
 			while (true) {
-				// »¡°£°ø ¿òÁ÷ÀÓ
-				//¿òÁ÷ÀÌ±â °¡´ÉÇÑ °æ¿ì
-				if (map[move_ry][move_rx] != '#' && map[move_ry][move_rx] != 'O') {
-					move_ry += dy[i];
-					move_rx += dx[i];
-				}
-				else {
-					//º®À» ¸¸³­°æ¿ì
-					if (map[move_ry][move_rx] == '#') {
-						move_ry -= dy[i];
-						move_rx -= dx[i];
-					}
-					break;
-				}
-			}
-			while (true) {
-				// ÆÄ¶õ°ø ¿òÁ÷ÀÓ
-				//¿òÁ÷ÀÌ±â °¡´ÉÇÑ °æ¿ì
-				if (map[move_by][move_bx] != '#' && map[move_by][move_bx] != 'O') {
-					move_by += dy[i];
-					move_bx += dx[i];
-				}
-				else {
-					//º®À» ¸¸³­°æ¿ì
-					if (map[move_by][move_bx] == '#') {
-						move_by -= dy[i];
-						move_bx -= dx[i];
-					}
-					break;
-				}
-			}
-
-			if (move_rx == move_bx && move_by == move_ry) {
-				if (map[move_ry][move_rx] != 'O') {
-					int red_dist = abs(move_ry - cur.ry) + abs(move_rx - cur.rx);
-					int blue_dist = abs(move_by - cur.by) + abs(move_bx - cur.bx);
-
-					if (red_dist > blue_dist) {
-						move_ry -= dy[i];
-						move_rx -= dx[i];
+				//ë¹¨ê°„ê³µ ì›€ì§ì„
+				if (move_ry >= 0 && move_ry < n && move_rx >= 0 && move_rx < m) {
+					if (map[move_ry][move_rx] != '#' && map[move_ry][move_rx] != 'O') {
+						move_ry += dy[dir];
+						move_rx += dx[dir];
 					}
 					else {
-						move_by -= dy[i];
-						move_bx -= dx[i];
+						if (map[move_ry][move_rx] == '#') {
+							move_ry -= dy[dir];
+							move_rx -= dx[dir];
+						}
+						break;
 					}
 				}
 			}
+			while (true) {
+				//íŒŒë€ê³µ ì›€ì§ì„
+				if (move_by >= 0 && move_by < n && move_bx >= 0 && move_bx < m) {
+					if (map[move_by][move_bx] != '#' && map[move_by][move_bx] != 'O') {
+						move_by += dy[dir];
+						move_bx += dx[dir];
+					}
+					else {
+						if (map[move_by][move_bx] == '#') {
+							move_by -= dy[dir];
+							move_bx -= dx[dir];
+						}
+						break;
+					}
+				}
+			}
+			//ê³µì˜ ìœ„ì¹˜ê°€ ê²¹ì¹  ê²½ìš°
+			if (move_ry == move_by && move_rx == move_bx) {
+				if (map[move_ry][move_rx] != 'O') {
+					int r_dist = abs(move_ry - cur.ry) + abs(move_rx - cur.rx);
+					int b_dist = abs(move_by - cur.by) + abs(move_bx - cur.bx);
 
+					if (r_dist > b_dist) {
+						move_ry -= dy[dir];
+						move_rx -= dx[dir];
+					}
+					else {
+						move_by -= dy[dir];
+						move_bx -= dx[dir];
+					}
+				}
+			}
+			//ì´ë™ì„ ë‹¤ í–ˆìœ¼ë‹ˆ ë°©ë¬¸ ì²˜ë¦¬
 			if (visited[move_ry][move_rx][move_by][move_bx] == false) {
 				visited[move_ry][move_rx][move_by][move_bx] = true;
 				bead move;
@@ -106,24 +105,23 @@ int BFS() {
 }
 
 int main(void) {
-	int n, m;
 	scanf("%d %d", &n, &m);
 
-	//¸Ê »ı¼º
 	for (int i = 0; i < n; i++) {
 		scanf("%s", map[i]);
 	}
-	// ±¸½½ À§Ä¡ Ã£±â
+
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < m; x++) {
+			//ë¹¨ê°„ ê³µ ì°¾ê¸°
 			if (map[y][x] == 'R') {
 				start.ry = y;
 				start.rx = x;
 			}
-
+			//íŒŒë€ ê³µ ì°¾ê¸°
 			if (map[y][x] == 'B') {
-				start.bx = x;
 				start.by = y;
+				start.bx = x;
 			}
 		}
 	}
