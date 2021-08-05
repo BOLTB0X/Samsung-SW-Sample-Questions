@@ -15,7 +15,7 @@ int distance(pair<int, int> a, pair<int, int> b) {
 }
 
 void DFS(int idx, int selected) {
-    //Á¶°Ç ¸¸Á·
+    //ì¡°ê±´ ë§Œì¡±
     if (selected == m) {
         int tempResult = 0;
         for (int i = 0; i < house.size(); i++) {
@@ -29,13 +29,13 @@ void DFS(int idx, int selected) {
         return;
     }
 
-    //±âÀú »ç·Ê
+    //ê¸°ì € ì‚¬ë¡€
     if (idx == chicken.size()) return;
 
-    //ÇÁ·£Â÷ÀÌÁî ¼±Á¤
+    //í”„ëžœì°¨ì´ì¦ˆ ì„ ì •
     visited[idx] = true;
     DFS(idx + 1, selected + 1);
-    //ÇÁ·£Â÷ÀÌÁî ¼±Á¤ X
+    //í”„ëžœì°¨ì´ì¦ˆ ì„ ì • X
     visited[idx] = false;
     DFS(idx + 1, selected);
 }
@@ -57,4 +57,4 @@ int main(void) {
     DFS(0, 0);
     cout << result << "\n";
     return 0;
-}
+} 
