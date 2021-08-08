@@ -3,95 +3,108 @@
 using namespace std;
 
 int n, m;
-int map[8][8]; 
-int tmp_map[8][8]; //입력용
-int dx[4] = { -1, 0, 1, 0 };
-int dy[4] = { 0, 1, 0, -1 };
-int answer = 0;
+int map[8][8];
+int tmp_map[8][8];
+int virus_map[8][8];
 
-//temp에 기존 map을 복사하는 함수
-void copyMap(int(*from)[8], int(*to)[8]) {
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			to[i][j] = from[i][j];
+int result = 0;
+
+int max(int a, int b) {
+	return a > b ? a : b;
+}
+
+
+int get_score() {
+	int score = 0;
+
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (virus_map[y][x] == 0)
+				score += 1;
+		}
+	}
+	return score;
+}
+
+void copy_map(int(*from)[8], int(*to)[8]) {
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			to[y][x] = from[y][x];
 		}
 	}
 }
 
 void virus() {
-	int result[8][8];
-	copyMap(tmp_map, result);
-	//바이러스가 있는 곳(2)의 사방을 전염시킨다.
+	copy_map(tmp_map, virus_map);
+
+	int dy[4] = { -1,0,1,0 };
+	int dx[4] = { 0,1,0,-1 };
+
 	queue<pair<int, int>> que;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (result[i][j] == 2) {
-				que.push({ i, j });
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (virus_map[y][x] == 2) {
+				que.push({ y,x });
 			}
 		}
 	}
 	while (!que.empty()) {
-		int x = que.front().first;
-		int y = que.front().second;
+		int cur_y = que.front().first;
+		int cur_x = que.front().second;
 		que.pop();
+
 		for (int i = 0; i < 4; i++) {
-			int nx = x + dx[i];
-			int ny = y + dy[i];
-			if (nx >= 0 && nx < n && ny >= 0 && ny < m) {
-				if (result[nx][ny] == 0) {
-					result[nx][ny] = 2;
-					que.push({ nx, ny });
+			int ny = cur_y + dy[i];
+			int nx = cur_x + dx[i];
+
+			if (0 <= ny && ny < n && 0 <= nx && nx < m) {
+				if (virus_map[ny][nx] == 0) {
+					virus_map[ny][nx] = 2;
+					que.push({ ny,nx });
 				}
 			}
 		}
 	}
-	//바이러스가 전염되지 않은 곳(0)을 세어준다.
-	int noVirus = 0;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (result[i][j] == 0) 
-				noVirus++;
-		}
-	}
-	answer = max(noVirus, answer);
+	
+	result = max(result, get_score());
 }
 
-//[브루트포스] 가능한 모든 경우의 수로 벽을 3개 세움, 재귀이용
 void make_wall(int cnt) {
 	if (cnt == 3) {
 		virus();
 		return;
 	}
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (tmp_map[i][j] == 0) {
-				tmp_map[i][j] = 1; //벽세우기
-				make_wall(cnt + 1); //벽 세운 횟수를 +1
-				tmp_map[i][j] = 0; //기존의 상태로 돌아가기(벽허물기)
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (tmp_map[y][x] == 0) {
+				tmp_map[y][x] = 1;
+				make_wall(cnt + 1);
+				tmp_map[y][x] = 0;
 			}
 		}
 	}
 }
+
 int main(void) {
-	//맵 생성
 	cin >> n >> m;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			cin >> map[i][j];
+
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			cin >> map[y][x];
 		}
 	}
-	//각 위치마다 벽을 세운다.
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (map[i][j] == 0) {
-				copyMap(map, tmp_map);
-				tmp_map[i][j] = 1; // 벽세우기
-				make_wall(1); //벽 하나 세웠으므로 cnt = 1
-				tmp_map[i][j] = 0; //벽허물기(원래 상태로 돌아가기)
+
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (map[y][x] == 0) {
+				copy_map(map, tmp_map);
+				tmp_map[y][x] = 1;
+				make_wall(1);
+				tmp_map[y][x] = 0;
 			}
 		}
 	}
-	//output
-	cout << answer <<'\n';
+
+	cout << result << '\n';
 	return 0;
 }
