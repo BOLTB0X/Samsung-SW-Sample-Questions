@@ -2,55 +2,49 @@
 using namespace std;
 
 int n;
-int numbers[101] = { 0, };
-int max_value = -1000000001;
-int min_value = 1000000001;
+int arr[11];
+int max_value = -1000000000;
+int min_value = 1000000000;
 
-int max(int value1, int value2) {
-	return value1 > value2 ? value1 : value2;
+int max(int a, int b) {
+	return a > b ? a : b;
 }
 
-int min(int value1, int value2) {
-	return value1 < value2 ? value1 : value2;
+int min(int a, int b) {
+	return a < b ? a : b;
 }
 
-void DFS(int number, int idx, int add, int sub, int mul, int div) {
-	if (idx == n) {
-		max_value = max(number, max_value);
-		min_value = min(number, min_value);
+void DFS(int add, int sub, int mul, int div, int tmp_value, int cnt) {
+	if (cnt == n) {
+		max_value = max(max_value, tmp_value);
+		min_value = min(min_value, tmp_value);
 		return;
 	}
-
 	else {
 		if (add > 0) {
-			DFS(number + numbers[idx], idx + 1, add - 1, sub, mul, div);
+			DFS(add - 1, sub, mul, div, tmp_value + arr[cnt],cnt + 1);
 		}
 		if (sub > 0) {
-			DFS(number - numbers[idx], idx + 1, add, sub-1, mul, div);
+			DFS(add, sub-1, mul, div, tmp_value - arr[cnt], cnt + 1);
 		}
 		if (mul > 0) {
-			DFS(number * numbers[idx], idx + 1, add, sub, mul-1, div);
+			DFS(add, sub, mul-1, div, tmp_value * arr[cnt], cnt + 1);
 		}
 		if (div > 0) {
-			DFS((int)(number / numbers[idx]), idx + 1, add, sub, mul, div-1);
+			DFS(add, sub, mul, div-1, (int)tmp_value / arr[cnt], cnt + 1);
 		}
+
 	}
 }
 
 int main(void) {
 	cin >> n;
-	for (int i = 0; i < n; i++) {
-		cin >> numbers[i];
-	}
+	for (int i = 0; i < n; i++) cin >> arr[i];
 	
 	int add, sub, mul, div;
-
 	cin >> add >> sub >> mul >> div;
+	DFS(add, sub, mul, div, arr[0], 1);
 
-	DFS(numbers[0], 1, add, sub, mul, div);
-
-	cout << max_value << '\n';
-	cout << min_value << '\n';
-
+	cout << max_value << '\n' << min_value << '\n';
 	return 0;
 }
