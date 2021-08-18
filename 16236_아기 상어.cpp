@@ -1,4 +1,4 @@
-#include <iostream>
+#include <cstdio>
 #include <queue>
 #include <cstring>
 using namespace std;
@@ -11,82 +11,85 @@ struct SHARK {
 	int dist;
 	int y;
 	int x;
-
+	//ìš°ì„ ìˆœìœ„
 	bool operator < (const SHARK& s) const {
-		if (dist == s.dist) {
-			if (y == s.y) {
-				return x > s.x; // x±âÁØ ¿À¸§Â÷¼ø
-			}
-			else return y > s.y;
+		if (dist == s.dist) { //ê±°ë¦¬ê°€ ê°™ë‹¤ë©´
+			if (y == s.y)
+				return x > s.x; //xê°’ ê¸°ì¤€ ì˜¤ë¦„ì°¨ìˆœ
+			else
+				return y > s.y; //yê°’ ê¸°ì¤€ ì˜¤ë¦„ì°¨ìˆœ
 		}
-		else return dist > s.dist;
+		else
+			return dist > s.dist;
 	}
 };
 
+int dy[4] = { -1,0,1,0 };
+int dx[4] = { 0,1,0,-1 };
+
+int babyshark_size = 2;
+int babyshark_move = 0;
+int babyshark_eat = 0;
 priority_queue<SHARK> pq;
-int baby_shark_size = 2;
-int move_cnt = 0;
-int eat_cnt = 0;
-int dy[4] = { -1,1,0,0 };
-int dx[4] = { 0,0,-1,1 };
 
-void BFS(void) {
+void BFS() {
 	while (!pq.empty()) {
-		int cur_dist = pq.top().dist;
-		int cur_y = pq.top().y;
-		int cur_x = pq.top().x;
+		int dist = pq.top().dist;
+		int y = pq.top().y;
+		int x = pq.top().x;
 		pq.pop();
-
-		//ÇöÀç À§Ä¡ ÆÄ¾Ç
-		if (map[cur_y][cur_x] > 0 && map[cur_y][cur_x] < baby_shark_size) {
-			eat_cnt += 1;
-			map[cur_y][cur_x] = 0;
-			if (baby_shark_size == eat_cnt) {
-				baby_shark_size += 1;
-				eat_cnt = 0;
+		//ê·¸ ìœ„ì¹˜ì—ì„œ ë¨¹ì„ ìˆ˜ ìžˆë‹¤ë©´
+		if (map[y][x] > 0 && map[y][x] < babyshark_size) {
+			babyshark_eat++;
+			map[y][x] = 0;
+			//ì•„ê¸° ìƒì–´ì˜ í¬ê¸°ì™€ ë¨¹ì€ íšŸìˆ˜ê°€ ê°™ë‹¤ë©´
+			if (babyshark_size == babyshark_eat) {
+				babyshark_size++;
+				babyshark_eat = 0; //ë¨¹ì€ íšŸìˆ˜ ì´ˆê¸°í™”
 			}
-			//¾Æ±â»ó¾î°¡ ¾ó¸¶³ª ¿òÁ÷¿´´ÂÁö 
-			move_cnt += cur_dist; 
-
-			//Áö±Ý À§Ä¡ºÎÅÍ ´ÙÀ½ ¹°°í±â±îÁö °Å¸®¸¦ Àç¾ßÇÔ
-			//Áï ÃÊ±âÈ­
-			cur_dist = 0;
+			//ì´ ì´ë™ì— ì›€ì§ì¸ ê±°ë¦¬ë¥¼ ë”í•´ì¤Œ
+			babyshark_move += dist;
+			//ì´ì œ ë‹¤ì‹œ ì²˜ìŒë¶€í„° ì‚¬ëƒ¥ê° ì°¾ì•„ì•¼í•¨
+			//ì´ˆê¸°í™”
+			dist = 0;
 			memset(visited, false, sizeof(visited));
-
-			while (!pq.empty())
+			while (!pq.empty()) 
 				pq.pop();
+			
 		}
-		for (int i = 0; i < 4; i++) {
-			int ny = cur_y + dy[i];
-			int nx = cur_x + dx[i];
 
-			//¹üÀ§ ÃÊ°úÇÒ °æ¿ì
+		for (int i = 0; i < 4; i++) {
+			int ny = y + dy[i];
+			int nx = x + dx[i];
+
+			//ë²”ìœ„ì—ì„œ ë²—ì–´ë‚œ ê²½ìš°
 			if (ny < 0 || ny >= n || nx < 0 || nx >= n)
 				continue;
-			//¹æ¹®ÇÑ °æ¿ì
+			//ìž¬ë°©ë¬¸ì¸ ê²½ìš°
 			if (visited[ny][nx])
 				continue;
-			if (map[ny][nx] > baby_shark_size)
+			//ë¬¼ê³ ê¸°ê°€ ìžˆì§€ë§Œ ì•„ê¸°ìƒì–´ë³´ë‹¤ í° ê²½ìš°
+			if (map[ny][nx] > 0 && map[ny][nx] > babyshark_size)
 				continue;
-			pq.push({ cur_dist + 1,ny,nx });
+			pq.push({dist+1,ny,nx});
 			visited[ny][nx] = true;
 		}
 	}
 }
 
 int main(void) {
-	cin >> n;
+	scanf("%d", &n);
 
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < n; x++) {
-			cin >> map[y][x];
+			scanf("%d", &map[y][x]);
 			if (map[y][x] == 9) {
-				map[y][x] = 0; //À§Ä¡¸¦ ¾Ë¾ÒÀ¸´Ï
 				pq.push({ 0,y,x });
+				map[y][x] = 0;
 			}
 		}
 	}
 	BFS();
-	cout << move_cnt << '\n';
+	printf("%d", babyshark_move);
 	return 0;
 }
