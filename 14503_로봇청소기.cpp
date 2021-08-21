@@ -2,90 +2,111 @@
 #include <queue>
 using namespace std;
 
+struct pos {
+	int r;
+	int c;
+	int dir;
+};
+
 int n, m;
 int map[51][51];
-queue<pair<pair<int, int>, int>> que;
-int dr[4] = { -1,0,1,0 };
-int dc[4] = { 0,1,0,- 1 };
-//방향
+queue<pos> q;
 //  0
 // 3 1
 //  2
-// 좌회전
-int turn_left(int dir) {
-	if (dir == 0)
+int turn_left(int d) {
+	if (d == 0)
 		return 3;
-	else if (dir == 3)
-		return 2;
-	else if (dir == 1)
+	else if (d == 1)
 		return 0;
-	else if (dir ==2)
+	else if (d == 2)
+		return 1;
+	else if (d == 3)
+		return 2;
+}
+
+int turn_back(int d) {
+	if (d == 0)
+		return 2;
+	else if (d == 1)
+		return 3;
+	else if (d == 2)
+		return 0;
+	else if (d == 3)
 		return 1;
 }
-//후진
-int turn_back(int dir) {
-	if (dir == 0)
-		return 2;
-	else if (dir == 3)
-		return 1;
-	else if (dir == 1)
-		return 3;
-	else if (dir == 2)
-		return 0;
-}
-//시뮬레이션 BFS이용
-int BFS(int r, int c, int d) {
-	que.push({ {r,c},d });
+
+int BFS(int row, int col, int direction) {
+	int dr[4] = { -1,0,1,0 };
+	int dc[4] = { 0,1,0,-1 };
+	pos start;
+	start.r = row;
+	start.c = col;
+	start.dir = direction;
+	q.push(start);
 	int result = 1;
-	map[r][c] = 2; //1.현재위치 청소
-	
-	while (!que.empty()) {
-		int cur_r = que.front().first.first;
-		int cur_c = que.front().first.second;
-		int cur_d = que.front().second;
-		int tmp_d = cur_d; //방향을 자주 바꿔야 하므로
-		que.pop();
-		 
-		//2.현재 위치에서 현재 방향을 기준으로 왼쪽 방향부터 차례대로 인접한 칸을 탐색
+	map[start.r][start.c] = 2;
+	//2번
+	while (!q.empty()) {
+		pos cur;
+		cur.r = q.front().r;
+		cur.c = q.front().c;
+		cur.dir = q.front().dir;
+		int tmp_dir = cur.dir;
+		q.pop();
+		
 		for (int i = 0; i < 4; i++) {
-			//2.b
-			tmp_d = turn_left(tmp_d);
-			int move_r = cur_r + dr[tmp_d];
-			int move_c = cur_c + dc[tmp_d];
-			//2.a
-			if (0 <= move_r && move_r < n
-				&& 0 <= move_c && move_c < m
-				&& map[move_r][move_c] == 0) {
-				map[move_r][move_c] = 2;
-				que.push({ {move_r,move_c},tmp_d });
+			tmp_dir = turn_left(tmp_dir);
+			int nr = cur.r + dr[tmp_dir];
+			int nc = cur.c + dc[tmp_dir];
+
+			//2번의 a
+			if (0 <= nr && nr < n && 0 <= nc && nc < m && map[nr][nc] == 0) {
+				pos next;
+				next.r = nr;
+				next.c = nc;
+				next.dir = tmp_dir;
+				map[next.r][next.c] = 2;
+				q.push(next);
 				result += 1;
 				break;
 			}
-			//2.c
+			//if에 안걸리면 2번의 b
+			
+			//2번의 c
 			else if (i == 3) {
-				int back_r = cur_r + dr[turn_back(cur_d)];
-				int back_c = cur_c + dc[turn_back(cur_d)];
-				que.push({ {back_r,back_c},cur_d });
-				//2.d
-				if (map[back_r][back_c] == 1) {
+				pos back;
+				back.r = cur.r + dr[turn_back(cur.dir)];
+				back.c = cur.c + dc[turn_back(cur.dir)];
+				back.dir = cur.dir;
+				q.push(back);
+
+				if (map[back.r][back.c] == 1) {
 					return result;
 				}
 			}
 		}
 	}
+	return result;
 }
-int main(void) {
-	cin >> n >> m;
 
-	int direction, row, col;
+int main(void) {
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+
+	cin >> n >> m;
+	int row, col, direction;
 	cin >> row >> col >> direction;
 
-	//맵생성
 	for (int r = 0; r < n; r++) {
 		for (int c = 0; c < m; c++) {
 			cin >> map[r][c];
 		}
 	}
-	cout << BFS(row, col, direction) << '\n';
+	
+	int ret = BFS(row,col,direction);
+
+	cout << ret << '\n';
 	return 0;
 }
