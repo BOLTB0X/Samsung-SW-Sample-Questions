@@ -1,46 +1,48 @@
-#include <iostream>
+#include <cstdio>
 using namespace std;
 
 int n;
 int map[17][17];
+int result = 0;
 
-//°¡·Î ´ë°¢¼± ¼¼·Î
-int dr[3] = { 0,1,1 };
-int dc[3] = { 1,1,0 };
-int result;
+//ì§„í–‰ë°©í–¥ ê°€ë¡œ ëŒ€ê°ì„  ì„¸ë¡œ
+const int dr[3] = { 0,1,1 };
+const int dc[3] = { 1,1,0 };
 
-bool check(int r, int c, int dir) {
-	//°¡·Î·Î ÁøÇàÇÑ °æ¿ì
-	if (dir==0) {
+//ì´ë™ê°€ëŠ¥í•œ ì§€ ì²´í¬
+//ê°€ë¡œëŠ” ê°€ë¡œ ì„¸ë¡œëŠ” ì„¸ë¡œ ëŒ€ê°ì„ ì€ ì…‹ë‹¤
+bool check(int r, int c, int direction) {
+	//ë°©í–¥ì´ ê°€ë¡œì¸ ê²½ìš°
+	if (direction == 0) {
 		for (int i = 0; i < 1; i++) {
 			int nr = r + dr[i];
 			int nc = c + dc[i];
 
-			if (nr<1 || nr>n || nc<1 || nc>n)
+			if (nr <= 0 || nr > n || nc <= 0 || nc > n)
 				return false;
 			if (map[nr][nc] != 0)
 				return false;
 		}
 	}
-	//´ë°¢¼±À¸·Î ÁøÇàÇÑ °æ¿ì
-	else if (dir == 1) {
+	//ë°©í–¥ì´ ëŒ€ê°ì„ ì¸ ê²½ìš°
+	else if (direction == 1) {
 		for (int i = 0; i < 3; i++) {
 			int nr = r + dr[i];
 			int nc = c + dc[i];
 
-			if (nr<1 || nr>n || nc<1 || nc>n)
+			if (nr <= 0 || nr > n || nc <= 0 || nc > n)
 				return false;
 			if (map[nr][nc] != 0)
 				return false;
 		}
 	}
-	//¼¼·ÎÀ¸·Î ÁøÇàÇÑ °æ¿ì
-	else if (dir == 2) {
+	//ì„¸ë¡œì¸ ê²½ìš°
+	else if (direction == 2) {
 		for (int i = 2; i < 3; i++) {
 			int nr = r + dr[i];
 			int nc = c + dc[i];
 
-			if (nr<1 || nr>n || nc<1 || nc>n)
+			if (nr <= 0 || nr > n || nc <= 0 || nc > n)
 				return false;
 			if (map[nr][nc] != 0)
 				return false;
@@ -49,54 +51,51 @@ bool check(int r, int c, int dir) {
 	return true;
 }
 
-void DFS(int r, int c, int dir) {
+void DFS(int r, int c, int direction) {
 	if (r == n && c == n) {
-		result++;
+		result += 1;
 		return;
 	}
-	//ÁøÇàÀÌ °¡·ÎÀÏ¶§
-	if (dir == 0) {
-		// 0,1 °¡·Î ´ë°¢¼±
+	//ë°©í–¥ì´ ê°€ë¡œì¸ ê²½ìš°
+	if (direction == 0) {
+		//ì§„í–‰í•  ìˆ˜ ìˆëŠ” ë°©í–¥ì€ ê°€ë¡œ, ëŒ€ê°
 		for (int i = 0; i < 2; i++) {
-			if (check(r, c, i)) {
+			//ì§„í–‰ì´ ê°€ëŠ¥í•˜ë‹¤ë©´
+			if (check(r, c, i)) 
 				DFS(r + dr[i], c + dc[i], i);
-			}
 		}
 	}
-	//´ë°¢¼±ÀÏ¶§
-	else if (dir == 1) {
-		// 0,1,2 °¡·Î ´ë°¢¼± ¼¼·Î
+	//ë°©í–¥ì´ ëŒ€ê°ì„ ì¸ ê²½ìš°
+	// íŠ¸ë¦¬ì˜ ê°€ì§€ì²˜ëŸ¼ ì¬ê·€ì´ë¯€ë¡œ else if
+	else if (direction == 1) {
+		//ì§„í–‰í•  ìˆ˜ ìˆëŠ” ë°©í–¥ì€ ê°€ë¡œ, ëŒ€ê°, ì„¸ë¡œ
 		for (int i = 0; i < 3; i++) {
-			if (check(r, c, i)) {
+			//ì§„í–‰ì´ ê°€ëŠ¥í•˜ë‹¤ë©´
+			if (check(r, c, i))
 				DFS(r + dr[i], c + dc[i], i);
-			}
 		}
 	}
-	//¼¼·ÎÀÏ¶§
-	else if (dir == 2) {
-		// 1,2 °¡·Î ´ë°¢¼± ¼¼·Î
+	//ë°©í–¥ì´ ì„¸ë¡œì¸ ê²½ìš°
+	// íŠ¸ë¦¬ì˜ ê°€ì§€ì²˜ëŸ¼ ì¬ê·€ì´ë¯€ë¡œ else if
+	else if (direction == 2) {
+		//ì§„í–‰í•  ìˆ˜ ìˆëŠ” ë°©í–¥ì€ ëŒ€ê°, ì„¸ë¡œ
 		for (int i = 1; i < 3; i++) {
-			if (check(r, c, i)) {
+			//ì§„í–‰ì´ ê°€ëŠ¥í•˜ë‹¤ë©´
+			if (check(r, c, i))
 				DFS(r + dr[i], c + dc[i], i);
-			}
 		}
 	}
 }
 
 int main(void) {
-	ios_base::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-
-	cin >> n;
+	scanf("%d", &n);
 
 	for (int r = 1; r <= n; r++) {
 		for (int c = 1; c <= n; c++) {
-			cin >> map[r][c];
+			scanf("%d", &map[r][c]);
 		}
 	}
-
 	DFS(1, 2, 0);
-	cout << result << '\n';
+	printf("%d\n", result);
 	return 0;
 }
