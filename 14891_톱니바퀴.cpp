@@ -1,115 +1,114 @@
 #include <iostream>
 #include <string>
-#include <vector>
 #include <queue>
 using namespace std;
 
-int T;
-deque<int> dq[5]; //½ÇÁ¦ Åé´Ï¹ÙÄû È¸Àü¿ë
-queue<pair<int, int>> q; //È¸Àü Á¤º¸¸¦ À§ÇÑ Å¥
+deque<int> dq[5]; //ì‹¤ì œ í†±ë‹ˆë°”í€´ íšŒì „ìš©
+int score = 0;
 
-void gear_rotate() {
-	//È¸Àü Á¤º¸¸¦ ´ã´Â Å¥°¡ ºñ¾îÁú¶§±îÁö ÆË
+//ì ìˆ˜í™•ì¸ 
+void get_score() {
+	int check = 1;
+	//ì ìˆ˜ë°©ì‹ì€ 2^n-1
+	for (int i = 1; i < 5; i++) {
+		if (dq[i][0] == 1)
+			score += check;
+		check *= 2;
+	}
+	return;
+}
+
+void gear_rotate(queue<pair<int,int>> q) {
+	//íšŒì „ì •ë³´ë¥¼ ë‹´ì€ íê°€ ë¹„ì–´ì§ˆë•Œ ê¹Œì§€
 	while (!q.empty()) {
-		int cur_num = q.front().first; //ÇöÀç È¸ÀüÇÒ Åé´Ï¹ÙÄû
-		int rotate = q.front().second; //½Ã°è¹æÇâÀÎÁö ¹İ½Ã°è¹æÇâÀÎÁö
+		int cur_idx = q.front().first;
+		int rotate = q.front().second;
 		q.pop();
-		//½Ã°è¹æÇâÀÎ °æ¿ì
+		//ì‹œê³„ë°©í–¥ì¸ ê²½ìš°
 		if (rotate == 1) {
-			//°¡Àå ÇÏ´Ü¿¡ ÀÖ´ø °Ô ÃÖ»ó´ÜÀ¸·Î ÀÌµ¿ 
-			int tmp = dq[cur_num].back();
-			dq[cur_num].pop_back();
-			dq[cur_num].push_front(tmp);
+			//ê°€ì¥ í•˜ë‹¨ì— ìˆë˜ê²Œ ìµœìƒë‹¨ìœ¼ë¡œ ì´ë™
+			int tmp = dq[cur_idx].back();
+			dq[cur_idx].pop_back();
+			dq[cur_idx].push_front(tmp);
 		}
-		//¹İ½Ã°è¹æÇâÀÎ °æ¿ì
+		//ë°˜ì‹œê³„ë°©í–¥ì¸ ê²½ìš°
 		else {
-			//°¡Àå »ó´Ü¿¡ ÀÖ´ø°Ô ÃÖÇÏ´ÜÀ¸·Î ÀÌµ¿
-			int tmp = dq[cur_num].front();
-			dq[cur_num].pop_front();
-			dq[cur_num].push_back(tmp);
+			//ê°€ì¥ ìƒë‹¨ì— ìˆë˜ê²Œ ìµœí•˜ë‹¨ìœ¼ë¡œ ì´ë™
+			int tmp = dq[cur_idx].front();
+			dq[cur_idx].pop_front();
+			dq[cur_idx].push_back(tmp);
 		}
 	}
 	return;
 }
 
-void gear_rotate_check(int gear_num, int gear_dir) {
-	int idx = gear_num;
+void gear_rotate_check(queue<pair<int,int>> q,int gear_idx, int gear_dir) {
+	int idx = gear_idx;
 	int tmp_dir = gear_dir;
-	//Å¥ »ğÀÔ
+	//í ì‚½ì…
 	q.push({ idx,tmp_dir });
 
-	//ÀÌÀüÈ®ÀÎ
+	//í˜„ì¬ í†±ë‹ˆë°”í€´ì˜ ì˜† í™•ì¸
 	while (true) {
-		if (idx == 4) 
+		if (idx == 4)
 			break;
 		idx++;
 		tmp_dir *= -1;
-		// È¸ÀüÀ» ÇÒ°æ¿ì °ü·Ã Á¤º¸¸¦ Å¥¿¡ »ğÀÔ
+		//íšŒì „ì •ë³´ë¥¼ íì— ì‚½ì…
+		//3ì‹œë°©í–¥ê³¼ 9ì‹œ ë°©í–¥ì´ ë‹¤ë¥´ë©´
 		if (dq[idx - 1][2] != dq[idx][6])
 			q.push({ idx,tmp_dir });
 		else
 			break;
 	}
-	idx = gear_num;
+	idx = gear_idx;
 	tmp_dir = gear_dir;
-	//¿· È®ÀÎ
+	//ì´ì „ í™•ì¸
 	while (true) {
-		if (idx == 1) 
+		if (idx == 1)
 			break;
-
 		idx--;
 		tmp_dir *= -1;
-		//È¸ÀüÇÒ °æ¿ì Å¥ÀÇ Á¤º¸¸¦ »ğÀÔ
-		if (dq[idx + 1][6] != dq[idx][2]) //È¸Àü Á¶°Ç
-			q.push({ idx,tmp_dir }); 
+		// íšŒì „í•  ê²½ìš° íì˜ ì •ë³´ë¥¼ ì‚½ì…
+		// 9ì‹œë°©í–¥ê³¼ 3ì‹œë°©í–¥
+		if (dq[idx + 1][6] != dq[idx][2])
+			q.push({ idx,tmp_dir });
 		else
 			break;
 	}
-	//ÁøÂ¥ Åé´Ï¹ÙÄû È¸Àü½ÃÀÛ
-	gear_rotate();
+	gear_rotate(q);
 	return;
 }
 
-int get_score() {
-	int score = 0;
-	int check = 1;
-	//Åé´Ï¹ÙÄû ¹øÈ£°¡ ¿Ã¶ó°¥¼ö·Ï ==> 2^n-1
-	for (int i = 1; i < 5; i++) {
-		if (dq[i][0] == 1) 
-			score += check;
-		check *= 2;
-	}
-	return score;
-}
-
 int main(void) {
-	//ÃÊ±âÈ­
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
-
-	//Åé´Ï¹ÙÄû ÀÔ·Â
+	
+	queue<pair<int, int>> q; //íšŒì „ ì •ë³´ë¥¼ íƒëŠ” í
+	
+	string tmp_gear;
 	for (int i = 1; i < 5; i++) {
-		string tmp_gear;
 		cin >> tmp_gear;
-		//Åé´Ï¹ÙÄûÀÇ Á¤º¸ µğÅ¥¿¡ »ğÀÔ
-		//Åé´Ï¹ÙÄû °¡Áö´Â 01234567, N = 0, S = 1
-		for (int j = 0; j < tmp_gear.length(); j++) 
+		//í†±ë‹ˆë°”í€´ì˜ N,Sê·¹ì˜ ì •ë³´ë¥¼ ë±ì— ì‚½ì…
+		for (int j = 0; j < tmp_gear.length(); j++) {
 			dq[i].push_back(tmp_gear[j] - '0');
+		}
 	}
-	//Å×½ºÆ® ½ÃÀÛ
+	int T;
 	cin >> T;
-	while (T--) {
-		int gear_num, gear_dir;
-		cin >> gear_num >> gear_dir;
-		//ÁøÂ¥ µ¹¸®±âÀü Á¶°Ç¿¡ ¸Â´Â Áö Ã¼Å©
-		gear_rotate_check(gear_num, gear_dir);
-		//q ÃÊ±âÈ­
-		while (!q.empty()) 
+	while (T>0) {
+		int gear_idx, gear_dir;
+		cin >> gear_idx >> gear_dir;
+		//ì§„ì§œ íšŒì „ì‹œí‚¤ê¸°ì „ì— ì²´í¬
+		gear_rotate_check(q,gear_idx, gear_dir);
+		//í ì´ˆê¸°í™”
+		while (!q.empty())
 			q.pop();
+		T--;
 	}
-	//Á¡¼öÈ®ÀÎ
-	int ret = get_score();
-	cout << ret << '\n';
+	//ì ìˆ˜í™•ì¸
+	get_score();
+	cout << score << '\n';
 	return 0;
 }
