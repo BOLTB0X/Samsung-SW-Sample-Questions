@@ -4,7 +4,7 @@
 using namespace std;
 
 typedef struct {
-	int s, d, z; //¼Ó·Â, ÀÌµ¿¹æÇâ, Å©±â
+	int s, d, z; //ì†ë ¥, ì´ë™ë°©í–¥, í¬ê¸°
 }shark;
 
 typedef struct {
@@ -14,11 +14,11 @@ typedef struct {
 
 int r, c, k;
 vector<shark> map[101][101];
-//»ó¾î ¿òÁ÷ÀÓÀ» ÀúÀåÇÏ´Â º¤ÅÍ
+//ìƒì–´ ì›€ì§ì„ì„ ì €ì¥í•˜ëŠ” ë²¡í„°
 vector<shark_inf> moving_shark;
-//ÀâÀº »ó¾î¸¦ ÀúÀåÇÏ´Â º¤ÅÍ
+//ì¡ì€ ìƒì–´ë¥¼ ì €ì¥í•˜ëŠ” ë²¡í„°
 vector<shark> caught;
-//À§ ¾Æ·¡ ¿ì ÁÂ
+//ìœ„ ì•„ë˜ ìš° ì¢Œ
 const int dr[4] = { -1,1,0,0 };
 const int dc[4] = { 0,0,1,-1 };
 
@@ -37,18 +37,18 @@ int turn_dir(int d) {
 
 void catch_shark(int king_cur) {
 	shark tmp_shark;
-	//³¬½Ã¿ÕÀÌ ÀÖ´Â ¿­¿¡ ÇàµéÀ» ÀÏÀÏÈ÷ È®ÀÎ
+	//ë‚šì‹œì™•ì´ ìˆëŠ” ì—´ì— í–‰ë“¤ì„ ì¼ì¼íˆ í™•ì¸
 	for (int i = 0; i < r; i++) {
 		if (!map[i][king_cur].empty()) {
 			tmp_shark = map[i][king_cur][0];
-			map[i][king_cur].clear(); //Àâ¾ÒÀ¸´Ï ºñ¿ì±â
+			map[i][king_cur].clear(); //ì¡ì•˜ìœ¼ë‹ˆ ë¹„ìš°ê¸°
 			caught.push_back(tmp_shark);
 			break;
 		}
 	}
 }
 
-//ÇÑ »ó¾îÀÇ ¿òÁ÷ÀÓ Àç±ÍÀÌ¿ë
+//í•œ ìƒì–´ì˜ ì›€ì§ì„ ì¬ê·€ì´ìš©
 shark_inf moving_single_shark(int row, int col, shark cur_shark) {
 	shark_inf tmp_inf;
 
@@ -58,7 +58,7 @@ shark_inf moving_single_shark(int row, int col, shark cur_shark) {
 
 	if (cur_shark.d == 0 || cur_shark.d == 1)
 		cnt = cur_shark.s % ((r - 1) * 2);
-	else 
+	else
 		cnt = cur_shark.s % ((c - 1) * 2);
 
 	for (int i = 0; i < cnt; i++) {
@@ -75,7 +75,7 @@ shark_inf moving_single_shark(int row, int col, shark cur_shark) {
 	return tmp_inf;
 }
 
-//Å«³ğÀÌ ¸ÕÀú
+//í°ë†ˆì´ ë¨¼ì €
 shark shark_crash(vector<shark> crash) {
 	int max_z = 0;
 	shark tmp_shark = crash[0];
@@ -90,16 +90,16 @@ shark shark_crash(vector<shark> crash) {
 }
 
 void move_shark(void) {
-	//È£ÃâÇÒ¶§ »ó¾îÀÇ ÀÌµ¿ÀÌ º¯ÇßÀ¸¹Ç·Î ÃÊ±âÈ­
+	//í˜¸ì¶œí• ë•Œ ìƒì–´ì˜ ì´ë™ì´ ë³€í–ˆìœ¼ë¯€ë¡œ ì´ˆê¸°í™”
 	moving_shark.clear();
 
 	shark_inf tmp_inf;
 	shark tmp_shark;
 
-	//¿òÁ÷ÀÌ´Â »ó¾îµéÀ» moving_shark º¤ÅÍ¿¡ »ğÀÔ
+	//ì›€ì§ì´ëŠ” ìƒì–´ë“¤ì„ moving_shark ë²¡í„°ì— ì‚½ì…
 	for (int i = 0; i < r; i++) {
 		for (int j = 0; j < c; j++) {
-			//»ó¾îµéÀÌ ÇØ´çÀ§Ä¡ ¸Ê¿¡ ÀÖÀ¸¸é
+			//ìƒì–´ë“¤ì´ í•´ë‹¹ìœ„ì¹˜ ë§µì— ìˆìœ¼ë©´
 			if (!map[i][j].empty()) {
 				tmp_inf = moving_single_shark(i, j, map[i][j][0]);
 				map[i][j].pop_back();
@@ -107,17 +107,17 @@ void move_shark(void) {
 			}
 		}
 	}
-	//moving_sharkº¤ÅÍ¿¡ ¾÷µ¥ÀÌÆ®Á¤º¸¸¦ ÀúÀåÇßÀ¸´Ï ¸Ê¿¡ Àû¿ë
+	//moving_sharkë²¡í„°ì— ì—…ë°ì´íŠ¸ì •ë³´ë¥¼ ì €ì¥í–ˆìœ¼ë‹ˆ ë§µì— ì ìš©
 	for (int i = 0; i < moving_shark.size(); i++) {
 		tmp_inf = moving_shark[i];
 		tmp_shark = { tmp_inf.s,tmp_inf.d,tmp_inf.z };
 		map[tmp_inf.r][tmp_inf.c].push_back(tmp_shark);
 	}
 
-	//¸¸¾à¿¡ ÇÑ ¼¿¿¡ µÎ¸¶¸® ÀÌ»óÀÏ °æ¿ì
+	//ë§Œì•½ì— í•œ ì…€ì— ë‘ë§ˆë¦¬ ì´ìƒì¼ ê²½ìš°
 	for (int i = 0; i < r; i++) {
 		for (int j = 0; j < c; j++) {
-			if (map[i][j].size() >1) {
+			if (map[i][j].size() > 1) {
 				tmp_shark = shark_crash(map[i][j]);
 				map[i][j].clear();
 				map[i][j].push_back(tmp_shark);
@@ -128,11 +128,11 @@ void move_shark(void) {
 }
 
 void simulation(void) {
-	//³¬½Ã¿ÕÀº Ç×»ó ¿À¸¥ÂÊÀ¸·Î ÀÌµ¿ÇÔ
+	//ë‚šì‹œì™•ì€ í•­ìƒ ì˜¤ë¥¸ìª½ìœ¼ë¡œ ì´ë™í•¨
 	for (int king = 0; king < c; king++) {
-		// ÇÑÄ­ ¾¿ ÀÌµ¿ÇÏ¸ç 
-		catch_shark(king); //ÀâÀ» ¼öÀÖ´Â Áö
-		move_shark(); //»ó¾îµéÀÇ ¿òÁ÷ÀÓ
+		// í•œì¹¸ ì”© ì´ë™í•˜ë©° 
+		catch_shark(king); //ì¡ì„ ìˆ˜ìˆëŠ” ì§€
+		move_shark(); //ìƒì–´ë“¤ì˜ ì›€ì§ì„
 	}
 	return;
 
@@ -147,15 +147,15 @@ int main(void) {
 
 	int tmp_r, tmp_c, tmp_s, tmp_d, tmp_z;
 	int answer = 0;
-	//¸Ê»ı¼º ¹× »ó¾î Á¤º¸ÀÔ·Â
+	//ë§µìƒì„± ë° ìƒì–´ ì •ë³´ì…ë ¥
 	for (int i = 0; i < k; i++) {
 		cin >> tmp_r >> tmp_c >> tmp_s >> tmp_d >> tmp_z;
 		tmp_shark = { tmp_s,tmp_d - 1,tmp_z };
 		map[tmp_r - 1][tmp_c - 1].push_back(tmp_shark);
 	}
-	//½Ã¹Ä·¹ÀÌ¼Ç ÁöÀÛ
+	//ì‹œë®¬ë ˆì´ì…˜ ì§€ì‘
 	simulation();
-	// ÀâÀº »ó¾î Å©±âÀÇ ÇÕÀ» Ãâ·Â
+	// ì¡ì€ ìƒì–´ í¬ê¸°ì˜ í•©ì„ ì¶œë ¥
 	for (int i = 0; i < caught.size(); i++) {
 		answer += caught[i].z;
 	}
