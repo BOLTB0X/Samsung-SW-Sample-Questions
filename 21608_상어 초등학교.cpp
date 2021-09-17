@@ -1,160 +1,129 @@
-#include <iostream>
+#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
+#include <queue>
 #include <vector>
-#include <algorithm>
-#define MAX 25
 
 using namespace std;
 
-struct shark_student {
-	int number;
-	int friendly_student[4];
-};
+//í•™ìƒë“¤ì˜ ìë¦¬ë°°ì¹˜
+//ë§Œì¡±ë„ ê³„ì‚°
 
-struct pos {
-	int r, c;
-	int nearly_empty;
-	int nearly_friendly_student;
-};
-
-//1. ºó Ä­ Áß¿¡¼­, ÁÁ¾ÆÇÏ´Â ÇĞ»ıÀÌ ÀÎÁ¢ÇÑ Ä­¿¡ ¸¹Àº °÷À¸·Î 1Â÷ÀûÀ¸·Î ¹èÄ¡.
-//2. 1¹ø Á¶°ÇÀ» ¿©·¯ Ä­ÀÌ ¸¸Á·ÇÑ´Ù¸é, ÀÎÁ¢ÇÑ Ä­¿¡ ºó Ä­ÀÌ ¸¹Àº °÷À¸·Î 2Â÷ÀûÀ¸·Î ¹èÄ¡.
-//3. 2¹ø Á¶°ÇÀ» ¿©·¯ Ä­ÀÌ ¸¸Á·ÇÑ´Ù¸é, ÇàÀÌ °¡Àå ÀÛÀº Ä­À¸·Î 3Â÷ÀûÀ¸·Î ¹èÄ¡.
-//4. 3¹ø Á¶°ÇÀ» ¿©·¯ Ä­ÀÌ ¸¸Á·ÇÑ´Ù¸é, ¿­ÀÌ °¡Àå ÀÛÀº Ä­À¸·Î ÃÖÁ¾ÀûÀ¸·Î ¹èÄ¡.
-
-bool compare(pos a, pos b) {
-	if (a.nearly_friendly_student >= b.nearly_friendly_student) {
-		if (a.nearly_friendly_student == b.nearly_friendly_student) {
-			if (a.nearly_empty >= b.nearly_empty) {
-				if (a.nearly_empty == b.nearly_empty) {
-					if (a.r <= b.r) {
-						if (a.r == b.r) {
-							if (a.c < b.c) {
-								return true;
-							}
-							return false;
-						}
-						return true;
-					}
-					return false;
-				}
-				return true;
+struct INF {
+	int y, x, blank_cnt = 0, friendly_cnt = 0;
+	//ìš°ì„ ìˆœìœ„ ë³€ê²½
+	bool operator < (const INF& i) const {
+		//ì¹œí•œë„˜ë“¤ì´ ë§ì€ ìª½
+		if (friendly_cnt == i.friendly_cnt) {
+			//ë¹ˆì¹¸ì´ ë§ì€ ìª½
+			if (blank_cnt == i.blank_cnt) {
+				//í–‰
+				if (y == i.y)
+					return y > i.y;
+				//ì—´
+				else
+					return x > i.x;
 			}
-			return false;
+			else
+				return blank_cnt < i.blank_cnt;
 		}
-		return true;
+		else
+			return friendly_cnt < i.friendly_cnt;
 	}
-	return false;
-}
+};
 
-//ÀÚ¸® ¹èÄ¡¸¦ À§ÇØ ÇÊ¿äÇÑ Á¤º¸µéÀ» ±¸Á¶Ã¼ 'pos'À¸·Î ¸¸µé¾î¼­ °ü¸®.
-//ÀÌ ±¸Á¶Ã¼¸¦ ÀÚ·áÇüÀ¸·Î °¡Áö´Â vector¸¦ ¼±¾ğÇØ¼­ ½ÇÁ¦·Î ÀÚ¸®¸¦ ¹èÄ¡ÇÒ °Í
+struct STUDENT {
+	int student_idx;
+	int love[4];
+	int y, x;
+};
 
-int n, answer = 0;
-int map[MAX][MAX];
-shark_student student_arr[MAX * MAX];
-vector<shark_student> student_v;
+int n;
+int map[20][20] = { 0, };
+int satisfy[5] = { 0,1,10,100,1000 };
+const int dy[4] = { -1,1,0,0 };
+const int dx[4] = { 0,0,-1,1 };
 
-int dr[4] = { -1,0,1,0 };
-int dc[4] = { 0,1,0,-1 };
+int simulation(vector<STUDENT>& student) {
+	//ìë¦¬ë°°ì¹˜
+	for (int sit = 0; sit < n * n; sit++) {
+		//ìš°ì„ ìˆœìœ„ í
+		priority_queue<INF> pq;
 
-void simulation(void) {
-	//¸ÕÀú À§Ä¡¼±Á¤
-	for (int i = 0; i < student_v.size(); i++) {
-		vector<pos> position;
-		int student_idx = student_v[i].number;
-		for (int r = 0; r < n; r++) {
-			for (int c = 0; c < n; c++) {
-				//Â÷ÀÖÀ¸´Ï
-				if (map[r][c] != 0) 
-					continue;
-				int near_shark = 0;
-				int near_emp = 0;
-				//±ÙÃ³ Å½»ö
-				for (int dir = 0; dir < 4; dir++) {
-					int nr = r + dr[dir];
-					int nc = c + dc[dir];
-					
-					if (nr < 0 || nc < 0 || nr >= n || nc >= n)
-						continue;
-					if (map[nr][nc] == 0)
-						near_emp++;
-					else {
-						for (int d = 0; d < 4; d++) {
-							int friend_num = student_v[i].friendly_student[d];
-							if (map[nr][nc] == friend_num) {
-								near_shark++;
-								break;
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				if (map[i][j] == 0) {
+					int blank_cnt = 0, friendly_cnt = 0;
+					for (int dir = 0; dir < 4; dir++) {
+						int ny = i + dy[dir];
+						int nx = j + dx[dir];
+
+						if (nx < 0 || ny < 0 || ny > n-1 || nx > n-1)
+							continue;
+						if (map[ny][nx] == 0)
+							blank_cnt++;
+						else {
+							for (int k = 0; k < 4; k++) {
+								if (map[ny][nx] == student[sit].love[k]) {
+									friendly_cnt++;
+									break;
+								}
 							}
 						}
 					}
-				}
-				position.push_back({ r,c,near_emp,near_shark });
-			}
-		}
-		sort(position.begin(), position.end(), compare);
-		int pos_r = position[0].r;
-		int pos_c = position[0].c;
-		map[pos_r][pos_c] = student_idx;
-	}
-}
-
-int check_calculate(int f) {
-	if (f == 0) 
-		return 0;
-	if (f == 1)
-		return 1;
-	if (f == 2)
-		return 10;
-	if (f == 3)
-		return 100;
-	if (f == 4)
-		return 1000;
-}
-
-void satisfy_check() {
-	for (int r = 0; r < n; r++) {
-		for (int c = 0; c < n; c++) {
-			int student_idx = map[r][c];
-			int friendly_student = 0;
-
-			for (int dir = 0; dir < 4; dir++) {
-				int nr = r + dr[dir];
-				int nc = c + dc[dir];
-
-				if (nr < 0 || nc < 0 || nr >= n || nc >= n)
-					continue;
-				for (int d = 0; d < 4; d++) {
-					int friendly_student_idx = student_arr[student_idx].friendly_student[d];
-					if (map[nr][nc] == friendly_student_idx) {
-						friendly_student++;
-						break;
-					}
+					pq.push({ i,j,blank_cnt,friendly_cnt });
 				}
 			}
-			answer += check_calculate(friendly_student);
+		}
+		if (!pq.empty()) {
+			int y = pq.top().y;
+			int x = pq.top().x;
+
+			map[y][x] = student[sit].student_idx;
+			student[sit].y = y;
+			student[sit].x = x;
 		}
 	}
+	//ë§Œì¡±ë„ ê³„ì‚°
+	int result = 0;
+	for (int sit = 0; sit < n * n; sit++) {
+		int y = student[sit].y;
+		int x = student[sit].x;
+
+		int friendly = 0;
+		for (int dir = 0; dir < 4; dir++) {
+			int ny = y + dy[dir];
+			int nx = x + dx[dir];
+
+			if (nx < 0 || ny < 0 || ny > n-1 || nx > n-1)
+				continue;
+			for (int k = 0; k < 4; k++) {
+				if (map[ny][nx] == student[sit].love[k]) {
+					friendly++;
+					break;
+				}
+			}
+		}
+		result += satisfy[friendly];
+	}
+	return result;
 }
+
 
 int main(void) {
-	ios::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-
-	//ÀÔ·Â
-	cin >> n;
+	scanf("%d", &n);
+	vector<STUDENT> student(n * n);
+	//ì…ë ¥
 	for (int i = 0; i < n * n; i++) {
-		int num, n1, n2, n3, n4;
-		cin >> num >> n1 >> n2 >> n3 >> n4;
-		student_v.push_back({ num,{n1,n2,n3,n4} });
-		student_arr[num].number = num;
-		student_arr[num].friendly_student[0] = n1;
-		student_arr[num].friendly_student[1] = n2;
-		student_arr[num].friendly_student[2] = n3;
-		student_arr[num].friendly_student[3] = n4;
+		int idx;
+		scanf("%d", &idx);
+		student[i].student_idx = idx;
+		for (int j = 0; j < 4; j++) {
+			int love;
+			scanf("%d", &love);
+			student[i].love[j] = love;
+		}
 	}
-	simulation();
-	satisfy_check();
-	cout << answer << '\n';
+	int ret = simulation(student);
+	printf("%d", ret);
 	return 0;
 }
