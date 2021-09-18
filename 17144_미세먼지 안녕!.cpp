@@ -10,13 +10,13 @@ int n, m, T;
 int map[50][50];
 int tmp_map[50][50];
 
-//°ø±âÃ»Á¤±â À§Ä¡¸¦ Àâ´Â ¹è¿­
+//ê³µê¸°ì²­ì •ê¸° ìœ„ì¹˜ë¥¼ ì¡ëŠ” ë°°ì—´
 INF clean[2];
-//¼­³²µ¿ºÏ
+//ì„œë‚¨ë™ë¶
 const int dy[4] = { -1,0,1,0 };
 const int dx[4] = { 0,1,0,-1 };
 
-//¸Ê º¹»ç
+//ë§µ ë³µì‚¬
 void map_copy(int(*from)[50], int(*to)[50]) {
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < m; j++) {
@@ -25,7 +25,7 @@ void map_copy(int(*from)[50], int(*to)[50]) {
 	}
 }
 
-//¾ç ÃøÁ¤
+//ì–‘ ì¸¡ì •
 int get_score(void) {
 	int tot = 0;
 	for (int y = 0; y < n; y++) {
@@ -37,18 +37,18 @@ int get_score(void) {
 	return tot;
 }
 
-//¹Ì¼¼¸ÕÁö È®»ê
+//ë¯¸ì„¸ë¨¼ì§€ í™•ì‚°
 void diffusion(void) {
 	map_copy(map,tmp_map);
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < m; x++) {
-			//¸ÕÁö ±âÁØÀº ÃÊ±â ¸Ê
-			//tmp_mapÀ¸·Î È®»ê½Ã ÆÛÁø °Íµµ Æ÷ÇÔÇÏ°Ô µÊ
-			//Áï ¿ø·¡ ±âÁØÀ¸·Î ÆÛÁö´Â ¸ÕÁö ±âÁØÀÌ µÚ¼¯ÀÓ
+			//ë¨¼ì§€ ê¸°ì¤€ì€ ì´ˆê¸° ë§µ
+			//tmp_mapìœ¼ë¡œ í™•ì‚°ì‹œ í¼ì§„ ê²ƒë„ í¬í•¨í•˜ê²Œ ë¨
+			//ì¦‰ ì›ë˜ ê¸°ì¤€ìœ¼ë¡œ í¼ì§€ëŠ” ë¨¼ì§€ ê¸°ì¤€ì´ ë’¤ì„ì„
 			if (map[y][x] != 0 && map[y][x] != -1) {
-				//ÀÌµ¿¹æÇâÀ¸·Î È®»ê
+				//ì´ë™ë°©í–¥ìœ¼ë¡œ í™•ì‚°
 				int d = map[y][x] / 5;
-				//ÆÛÁ®³ª°£ È½¼ö
+				//í¼ì ¸ë‚˜ê°„ íšŸìˆ˜
 				int move_cnt = 0;
 				for (int dir = 0; dir < 4; dir++) {
 					int ny = y + dy[dir];
@@ -60,39 +60,39 @@ void diffusion(void) {
 					tmp_map[ny][nx] += d;
 					move_cnt++;
 				}
-				//¹®Á¦Á¶°Ç
+				//ë¬¸ì œì¡°ê±´
 				tmp_map[y][x] -= (d * move_cnt);
 			}
 		}
 	}
-	//ÀÓ½Ã¸ÊÀ» ´Ù½Ã ¸ÊÀ¸·Î º¹»ç
+	//ì„ì‹œë§µì„ ë‹¤ì‹œ ë§µìœ¼ë¡œ ë³µì‚¬
 	map_copy(tmp_map, map);
 }
 
-//½ºÅ¸Æ®
+//ìŠ¤íƒ€íŠ¸
 void clean_start(void) {
 	for (int idx = 0; idx < 2; idx++) {
-		//¹İ½Ã°è
+		//ë°˜ì‹œê³„
 		if (idx == 0) {
-			//Çà À§¿¡¼­ºÎÅÍ 0±îÁö
+			//í–‰ ìœ„ì—ì„œë¶€í„° 0ê¹Œì§€
 			for (int i = clean[idx].y - 1; i > 0; i--) {
 				map[i][0] = map[i - 1][0];
 			}
-			// ¿­ À­ÁÙ ÇÑÄ­½Ä È¸Àü
+			// ì—´ ìœ—ì¤„ í•œì¹¸ì‹ íšŒì „
 			for (int i = 0; i < m - 1; i++) {
 				map[0][i] = map[0][i + 1];
 			}
-			// ¿­ À­ÁÙ µÚÁıÀº ¹æÇâ 
+			// ì—´ ìœ—ì¤„ ë’¤ì§‘ì€ ë°©í–¥ 
 			for (int i = 1; i<= clean[idx].y;i++) {
 				map[i-1][m-1] = map[i][m-1];
 			}
-			//Çà À§¿¡¼­ºÎÅÍ 0±îÁö µÚÁıÀº ¹æÇâ
+			//í–‰ ìœ„ì—ì„œë¶€í„° 0ê¹Œì§€ ë’¤ì§‘ì€ ë°©í–¥
 			for (int i = m - 1; i > 1; i--) {
 				map[clean[idx].y][i] = map[clean[idx].y][i - 1];
 			}
 			map[clean[idx].y][1] = 0;
 		}
-		//½Ã°è¹æÇâ
+		//ì‹œê³„ë°©í–¥
 		else {
 			for (int i = clean[idx].y + 1; i < n - 1; i++) {
 				map[i][0] = map[i + 1][0];
@@ -122,12 +122,13 @@ int simulation(void) {
 }
 
 int main(void) {
+	//ì…ë ¥
 	scanf("%d %d %d", &n, &m, &T);
 	int idx = 0;
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < m; x++) {
 			scanf("%d", &map[y][x]);
-			//°ø±âÃ»Á¤±âÀÏ °æ¿ì
+			//ê³µê¸°ì²­ì •ê¸°ì¼ ê²½ìš°
 			if (map[y][x] == -1) {
 				clean[idx] = { y,x };
 				idx++;
