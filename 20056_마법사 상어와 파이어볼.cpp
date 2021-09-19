@@ -11,6 +11,7 @@ typedef struct {
 } INF;
 
 int n, m, k;
+//맵을 벡터로 한 셀에 여러 원소가 올수 있음
 vector<INF> map[51][51];
 vector<INF> fireball;
 
@@ -33,6 +34,7 @@ void fireball_move(void) {
 		int cur_x = cur_fireball.x;
 		int ny = cur_y + dy[cur_fireball.d] * cur_fireball.s;
 		int nx = cur_x + dx[cur_fireball.d] * cur_fireball.s;
+		//
 		while (ny < 1)
 			ny += n;
 		while (nx < 1)
