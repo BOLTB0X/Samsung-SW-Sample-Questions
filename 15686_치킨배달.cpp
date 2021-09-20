@@ -1,66 +1,78 @@
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
+#define _CRT_SECURE_NO_WARNINGS
+#include <cstdio>
 
-const int INF = 0x7fffffff;
+struct INF {
+	int y, x;
+};
+
 int n, m, result;
-int map[51][51];
-vector<pair<int, int>> house;
-vector<pair<int, int>> chicken;
+int map[50][50];
+INF house[14];
+int house_size = 0;
+INF store[14];
+int store_size = 0;
 bool visited[14];
 
-int manhattan_dist(pair<int, int> a, pair<int, int> b) {
-	return abs(a.first - b.first) + abs(a.second - b.second);
+//최소
+int min(int a, int b) {
+	return a < b ? a : b;
 }
 
-int get_chicken_dist() {
+//절댓값
+int abs(int a) {
+	if (a < 0)
+		return -a;
+	return a;
+}
+
+//맨하튼 거리
+int manhattan_dist(INF a, INF b) {
+	return abs(a.y - b.y) + abs(a.x - b.x);
+}
+
+//치킨거리
+int get_dist(void) {
 	int tmp_result = 0;
-	for (int i = 0; i < house.size(); i++) {
-		int dist = INF;
-		for (int j = 0; j < chicken.size(); j++) {
+	for (int i = 0; i < house_size; i++) {
+		int dist = 0x7fffffff;
+		for (int j = 0; j < store_size; j++) {
 			if (visited[j])
-				dist = min(dist, manhattan_dist(house[i], chicken[j]));
+				dist = min(dist, manhattan_dist(house[i], store[j]));
 		}
 		tmp_result += dist;
 	}
 	return tmp_result;
 }
 
-void combination(int idx, int select_cnt) {
-	if (select_cnt == m) {
-		result = min(result, get_chicken_dist());
+void combination(int idx, int depth) {
+	if (depth == m) {
+		result = min(result, get_dist());
 		return;
 	}
-
-	if (idx == chicken.size())
+	if (idx == store_size)
 		return;
 	visited[idx] = true;
-	combination(idx + 1, select_cnt + 1);
+	combination(idx + 1, depth + 1);
 	visited[idx] = false;
-	combination(idx + 1, select_cnt);
+	combination(idx + 1, depth);
 }
 
 int main(void) {
-	//초기화
-	ios::sync_with_stdio(0);
-	cin.tie(0); cout.tie(0);
-
 	//입력
-	cin >> n >> m;
-
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			cin >> map[i][j];
-			if (map[i][j] == 1)
-				house.push_back({ i,j });
-			else if (map[i][j] == 2)
-				chicken.push_back({ i,j });
+	scanf("%d %d", &n, &m);
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < n; x++) {
+			scanf("%d", &map[y][x]);
+			//집인 경우
+			if (map[y][x] == 1) 
+				house[house_size++] = { y,x };
+			//상점인 경우
+			if (map[y][x] == 2) 
+				store[store_size++] = { y,x };
 		}
 	}
-
-	result = INF;
+	result = 0x7fffffff;
 	combination(0, 0);
-	cout << result << "\n";
+	printf("%d", result);
 	return 0;
 }
