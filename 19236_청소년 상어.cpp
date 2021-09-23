@@ -1,182 +1,197 @@
-#include <iostream> 
-#include <vector> 
+#define _CRT_SECURE_NO_WARNINGS
+#include <iostream>
 
-using namespace std; 
+using namespace std;
 
-typedef struct fish { 
-	int num; 
-	int dir; 
-}fish; 
+//물고기 자료형
+struct FISH {
+	int y, x, dir, alive; //1 살아있음, 0 죽음
+};
 
-typedef struct INF { 
-	int y; 
-	int x; 
-	bool alive; // 0 = dead 
-}INF; 
+int map[4][4];
+FISH fish[17];
 
-fish map[4][4]; 
-fish shark; 
-INF fish_pos[17]; // 0 is not used 
+//이동방향
+const int dy[9] = { 0,-1,-1,0,1,1,1,0,-1 };
+const int dx[9] = { 0,0,-1,-1,-1,0,1,1,1 };
+int result;
 
-const int dy[8] = {-1, -1, 0, 1, 1, 1, 0, -1}; 
-const int dx[8] = {0, -1, -1, -1, 0, 1, 1, 1}; 
-int result; 
+//최대
+int max(int a, int b) {
+	return a > b ? a : b;
+}
 
-bool isRange(int r, int c) { 
-	if (r < 0 || r >= 4 || c < 0 || c >= 4) { 
-		return false; 
-	} 
-	else 
-		return true; 
-} 
+//맵 복사
+void map_backup(int(*from)[4], int(*to)[4]) {
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			to[y][x] = from[y][x];
+		}
+	}
+	return;
+}
 
-void swap(fish &a, fish &b) { 
-	fish temp = a; 
-	a = b; 
-	b = temp; 
-} 
+//배열 복사
+void arr_backup(FISH* from, FISH* to) {
+	for (int i = 1; i <= 16; i++) {
+		to[i] = from[i];
+	}
+	return;
+}
 
-void swap_pos(INF &a, INF &b) { 
-	INF temp = a; 
-	a = b; 
-	b = temp; 
-} 
+//물고기들의 좌표를의 스와핑
+void fish_swap(int a, int b) {
+	FISH tmp = fish[a];
+	fish[a].y = fish[b].y;
+	fish[a].x = fish[b].x;
+	fish[b].y = tmp.y;
+	fish[b].x = tmp.x;
+	return;
+}
 
-void fish_move() { 
-	fish t_fish; 
-	int ny, nx, nd; 
-	int y, x; 
+//물고기들의 이동 
+void move_fish(void) {
+	//물고기들 작은 순번부터
+	for (int i = 1; i <= 16; i++) {
+		//죽었다면
+		if (fish[i].alive == 0)
+			continue;
+		int y = fish[i].y;
+		int x = fish[i].x;
+		int dir = fish[i].dir;
+
+		int ny = y + dy[dir];
+		int nx = x + dx[dir];
+		bool flag = false;
+		//범위 내고
+		if (ny >= 0 && nx >= 0 && ny < 4 && nx < 4) {
+			//이동 가능 하면
+			if (map[ny][nx] == 0) {
+				flag = true;
+				fish[i].y = ny;
+				fish[i].x = nx;
+				map[ny][nx] = i;
+				map[y][x] = 0;
+			}
+			//다른 물고기가 있으면
+			else if (map[ny][nx] != -1) {
+				flag = true;
+				fish_swap(i, map[ny][nx]);
+				swap(map[y][x], map[ny][nx]);
+			}
+		}
+		//여기까지 와서 flag가 거짓인 경우
+		//물고기들은 현재방향으로 진행불능
+		if (flag==false) {
+			int nd = dir + 1;
+			if (nd == 9)
+				nd = 1;
+			int ny = y + dy[nd];
+			int nx = x + dx[nd];
+
+			while (nd != dir) {
+				if (ny >= 0 && nx >= 0 && ny < 4 && nx < 4) {
+					if (map[ny][nx] == 0) {
+						fish[i].y = ny;
+						fish[i].x = nx;
+						map[ny][nx] = i;
+						map[y][x] = 0;
+						fish[i].dir = nd;
+						break;
+					}
+					else if (map[ny][nx] != -1) {
+						fish_swap(i, map[ny][nx]);
+						swap(map[y][x], map[ny][nx]);
+						fish[i].dir = nd;
+						break;
+					}
+				}
+			nd++;
+			if (nd == 9)
+				nd = 1;
+			ny = y + dy[nd];
+			nx = x + dx[nd];
+			}
+		}
+	}
+}
+
+//물고기들 상태
+void fish_state(int y, int x, int ny, int nx, int fish_idx, bool flag) {
+	if (flag == true) {
+		map[y][x] = 0;
+		//상어 위치
+		map[ny][nx] = -1;
+		fish[fish_idx].alive = 0;
+	}
+	else {
+		map[y][x] = -1;
+		//상어 위치 그래도 위치
+		map[ny][nx] = fish_idx;
+		fish[fish_idx].alive = 1;
+	}
+	return;
+}
+
+//상어로 백트래킹
+void DFS(int shark_y, int shark_x, int tot, int shark_dir) {
+	result = max(result, tot);
+	//백트래킹이므로 tmp선언
+	int c_map[4][4];
+	FISH c_fish[17];
+	//백업시켜두기
+	map_backup(map, c_map);
+	arr_backup(fish, c_fish);
 	
-	INF move_it; 
-	for (int i = 1; i <= 16; i++) { 
-		move_it = fish_pos[i]; 
-		y = move_it.y; 
-		x = move_it.x; 
-		if (move_it.alive) { 
-			t_fish = map[y][x]; // if it is a fish 
-			if (t_fish.num >= 1 && t_fish.num <= 16) { 
-				for (int d = 0; d < 8; d++) { 
-					nd = (t_fish.dir + d) % 8; 
-					//map[r][c].dir = n_d; 
-					ny = y + dy[nd]; 
-					nx = x + dx[nd]; 
-					if (!isRange(ny, nx) || map[ny][nx].num == 100) { 
-						continue; 
-					} 
-					if (map[ny][nx].num == 0) { 
-						map[ny][nx] = { t_fish.num, nd }; 
-						map[y][x].num = 0; 
-						fish_pos[i] = { ny, nx, 1}; 
-						break; 
-					} 
-					
-					if (map[ny][nx].num >= 1 && map[ny][nx].num <= 16) { 
-						fish_pos[i] = { ny, nx, 1 }; 
-						fish_pos[map[ny][nx].num] = { y, x, 1 }; 
-						map[y][x].dir = nd; 
-						swap(map[y][x], map[ny][nx]); 
-						//swap_pos(fish_pos[i], fish_pos[map[n_r][n_c].num]); 
-						break; 
-					} 
-				} 
-			} 
-		} 
-	} 
-} 
+	//물고기들 이동
+	move_fish();
 
-void copy_map(fish dst[4][4], fish src[4][4]) { 
-	for (int i = 0; i < 4; i++) { 
-		for (int j = 0; j < 4; j++) { 
-			dst[i][j] = src[i][j]; 
-		} 
-	} 
-} 
+	//상어 이동
+	for (int i = 1; i <= 3; i++) {
+		int ny = shark_y + dy[shark_dir] * i;
+		int nx = shark_x + dx[shark_dir] * i;
 
-void copy_pos(INF dst[17], INF src[17]) { 
-	for (int i = 1; i <= 16; i++) { 
-		dst[i] = src[i]; 
-	} 
-} 
+		if (ny >= 0 && nx >= 0 && ny < 4 && nx < 4) {
+			if (map[ny][nx] == 0)
+				continue;
+			int fish_idx = map[ny][nx];
+			int nd = fish[fish_idx].dir;
 
-void dfs(int sum, int sh_row, int sh_col) { 
-	// first, move the fish 
-	fish_move(); 
-	// terminator 
-	// if nowhere else to go (shark), then return 
-	int ny, nx, nd; 
-	fish t_fish, t_shark; 
-	fish backup[4][4]; 
-	INF back_pos[17]; 
-	nd = map[sh_row][sh_col].dir; 
-	
-	vector<int> leap; // how much leap that shark can take 
-	
-	for (int i = 1; i <= 3; i++) { 
-		ny = sh_row + dy[nd] * i; 
-		nx = sh_col + dx[nd] * i; 
-		
-		if (isRange(ny, nx) && map[ny][nx].num != 0) { 
-			leap.push_back(i); 
-		} 
-	} 
-	// go home 
-	if (leap.empty()) { 
-		result = max(result, sum); 
-		return; 
-	} 
-	else { // move shark and dfs 
-		for (int i = 0; i < leap.size(); i++) { 
-			// new position 
-			ny = sh_row + dy[nd] * leap[i]; 
-			nx = sh_col + dx[nd] * leap[i]; 
-			
-			// copy original 
-			t_shark = map[sh_row][sh_col]; 
-			t_fish = map[ny][nx]; 
-			copy_map(backup, map); 
-			copy_pos(back_pos, fish_pos); 
-			
-			// move shark 
-			// empty original 
-			map[sh_row][sh_col].num = 0; 
-			
-			// fill the new tile (obsorbs direction) 
-			map[ny][nx].num = 100; 
-			fish_pos[t_fish.num].alive = 0; 
-			
-			// dfs 
-			dfs(sum + t_fish.num, ny, nx); 
-			
-			// restore 
-			copy_map(map, backup); 
-			copy_pos(fish_pos, back_pos); 
-		} 
-	} 
-} 
+			//상어가 이동하며 먹은 경우와 안먹은 경우
+			fish_state(shark_y, shark_x, ny, nx, fish_idx, true);
+			DFS(ny, nx, tot + fish_idx, nd);
+			fish_state(shark_y, shark_x, ny, nx, fish_idx, false);
+		}
+		else
+			break;
+	}
+	map_backup(c_map, map);
+	arr_backup(c_fish, fish);
+}
 
-int main() {
-	//�ʱ�ȭ
-	ios::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-
-	int t_n, t_d; 
-	fish start; 
-	result = 0; 
-	
-	for (int i = 0; i < 16; i++) { 
-		cin >> t_n >> t_d; 
-		map[i / 4][i % 4] = { t_n, t_d - 1 }; 
-		fish_pos[t_n] = { i / 4, i % 4, 1 }; 
-	} 
-	// shark eats the first one 
-	start = map[0][0]; 
-	
-	result += start.num; 
-	
-	map[0][0].num = 100; 
-	fish_pos[start.num].alive = false; 
-	dfs(result, 0, 0); 
-	
-	cout << result << endl; 
+//시뮬
+void simulation(void) {
+	//초기 상어가 (0,0)물고기 잡아먹음
+	int fish_idx = map[0][0];
+	int fish_dir = fish[fish_idx].dir;
+	fish[fish_idx].alive = 0;
+	//상어 위치 
+	map[0][0] = -1; 
+	//백트래킹 
+	DFS(0, 0, fish_idx, fish_dir);
+	return;
+}
+int main(void) {
+	//물고기 정보 입력
+	for (int y = 0; y < 4; y++) {
+		for (int x = 0; x < 4; x++) {
+			int idx, dir;
+			scanf("%d %d", &idx, &dir);
+			map[y][x] = idx;
+			fish[idx] = { y,x,dir,1 };
+		}
+	}
+	simulation();
+	printf("%d\n", result);
+	return 0;
 }
