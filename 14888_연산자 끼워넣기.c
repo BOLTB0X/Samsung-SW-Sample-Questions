@@ -1,18 +1,20 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <stdio.h>
 
-//�ִ�
+//최대
 int max(int a, int b) {
 	return a > b ? a : b;
 }
-//�ּ�
+//최소
 int min(int a, int b) {
 	return a < b ? a : b;
 }
 
 int n, max_result = -0x7fffffff, min_result = 0x7fffffff;
 
+//DFS
 void DFS(int *arr,int tot, int add, int sub, int mul, int div, int idx) {
+	//특정 깊이에 도달하면 스탑
 	if (idx == n) {
 		max_result = max(max_result, tot);
 		min_result = min(min_result, tot);
@@ -36,7 +38,7 @@ void DFS(int *arr,int tot, int add, int sub, int mul, int div, int idx) {
 
 int main(void) {
 	int numbers[11];
-	
+	//입력
 	scanf("%d", &n);
 	for (int i = 0; i < n; i++) 
 		scanf("%d", &numbers[i]);
