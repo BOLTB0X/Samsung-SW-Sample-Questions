@@ -1,20 +1,17 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <cstdio>
 #include <queue>
-#include <cstring>
 
 using namespace std;
 
-//위치와 거리를 담는 구조체
+//변수 및 우선순위 큐를 위한 연산자 수정
 struct INF {
 	int y, x, dist;
 
-	//거리 조건
 	bool operator < (const INF& i) const {
 		if (dist == i.dist) {
-			if (y == i.y) {
+			if (y == i.y) 
 				return x > i.x;
-			}
 			return y > i.y;
 		}
 		return dist > i.dist;
@@ -26,11 +23,21 @@ int map[21][21];
 bool visited[21][21];
 int taxi_y, taxi_x;
 int customer[401][4];
-int customer_idx, flag, used_fuel;
-
+//체크, 소모된 연료, 손님 번호
+int flag, used_fuel,customer_idx;
 //상하좌우
 const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
+
+//방문초기
+void visit_init(void) {
+	for (int y = 1; y <= n; y++) {
+		for (int x = 1; x <= n; x++) {
+			visited[y][x] = false;
+		}
+	}
+	return;
+}
 
 //범위 체크
 bool check_range(int y, int x) {
@@ -39,40 +46,39 @@ bool check_range(int y, int x) {
 	return false;
 }
 
-//우선순위 큐와 BFS 탐색으로 고객을 찾음
-void find_customer(int sy, int sx, int dist) {
+//손님 찾기
+void find_customer(int y, int x, int dist) {
 	priority_queue<INF> pq;
-	pq.push({ sy,sx,dist });
+	pq.push({ y,x,dist });
 
-	//큐가 빌때까지
 	while (!pq.empty()) {
 		int cy = pq.top().y;
 		int cx = pq.top().x;
-		int dist = pq.top().dist;
+		int cd = pq.top().dist;
 
-		//만약 손님의 위치면
+		//승객위치에 도달했다면
+		//승객배열 탐색
 		for (int i = 1; i <= m; i++) {
-			if (customer[i][0] != -1 && cy == customer[i][0] && cx == customer[i][1]) {
-				customer_idx = i;
-				used_fuel = dist;
-				//체크
+			if (customer[i][0] != -1
+				&& customer[i][0] == cy && customer[i][1] == cx) {
+				customer_idx = i; //승객 번호 할당
 				flag = 1;
+				used_fuel = cd;
 				break;
 			}
 		}
-		//체크되었으면 탈출
 		if (flag == 1)
-			break;
+				break;
 		pq.pop();
-		//이동하면서 손님위치 탐색
-		for (int i = 0; i < 4; i++) {
-			int ny = cy + dy[i];
-			int nx = cx + dx[i];
 
-			if (map[ny][nx] == 0 && !visited[ny][nx]) {
-				if (check_range(ny, nx)) {
+		for (int dir = 0; dir < 4; dir++) {
+			int ny = cy + dy[dir];
+			int nx = cx + dx[dir];
+
+			if (check_range(ny, nx)) {
+				if (!visited[ny][nx] && map[ny][nx] == 0) {
 					visited[ny][nx] = true;
-					pq.push({ ny,nx,dist + 1 });
+					pq.push({ ny,nx,cd + 1 });
 				}
 			}
 		}
@@ -80,33 +86,33 @@ void find_customer(int sy, int sx, int dist) {
 	return;
 }
 
-void move(int sy, int sx, int dist) {
+void taxi_move(int y, int x, int dist) {
 	priority_queue<INF> pq;
-	pq.push({ sy,sx,dist });
+	pq.push({ y,x,dist });
 
 	while (!pq.empty()) {
 		int cy = pq.top().y;
 		int cx = pq.top().x;
-		int dist = pq.top().dist;
-		//목적지에 도달했으면
-		if (cy == customer[customer_idx][2] && cx == customer[customer_idx][3]) {
-			used_fuel = dist;
+		int cd = pq.top().dist;
+
+		//승객위치에 도달했다면
+		if (customer[customer_idx][2] == cy && customer[customer_idx][3] == cx) {
 			flag = 1;
+			used_fuel = cd;
 			break;
 		}
-		//체크
 		if (flag == 1)
-			break;
+				break;
 		pq.pop();
-		//이동하면서 목적지위치 최단거리 탐색
-		for (int i = 0; i < 4; i++) {
-			int ny = cy + dy[i];
-			int nx = cx + dx[i];
 
-			if (map[ny][nx] == 0 && !visited[ny][nx]) {
-				if (check_range(ny, nx)) {
+		for (int dir = 0; dir < 4; dir++) {
+			int ny = cy + dy[dir];
+			int nx = cx + dx[dir];
+
+			if (check_range(ny, nx)) {
+				if (!visited[ny][nx] && map[ny][nx] == 0) {
 					visited[ny][nx] = true;
-					pq.push({ ny,nx,dist + 1 });
+					pq.push({ ny,nx,cd + 1 });
 				}
 			}
 		}
@@ -114,48 +120,55 @@ void move(int sy, int sx, int dist) {
 	return;
 }
 
+//시뮬레이션
 int simulation(void) {
 	int result = -1;
+	//손님 숫자만큼 반복 시작
 	for (int i = 1; i <= m; i++) {
-		//제일 먼저 가장 가까운 고객탐색
+		//손님찾기
 		flag = 0;
-		memset(visited, false, sizeof(visited));
+		visit_init();
+		//택시 위치에서 가장 가까운 승객 찾기
 		find_customer(taxi_y, taxi_x, 0);
 		taxi_y = customer[customer_idx][0];
 		taxi_x = customer[customer_idx][1];
+		//이 승객은 탑승했다는 기록
 		customer[customer_idx][0] = -1;
 		fuel -= used_fuel;
-		//없거나 연료가 바닥나면
+		//한 번 더 검사
 		if (fuel < 0 || flag == 0)
 			break;
-		//그 고객을 실고 목적지까지 이동
+		//손님 데리고 이동하기
 		flag = 0;
-		memset(visited, false, sizeof(visited));
-		move(taxi_y, taxi_x, 0);
+		visit_init();
+		//목적지 위치로 이동
+		taxi_move(taxi_y, taxi_x, 0);
+		//택시위치 목적지로 변경
 		taxi_y = customer[customer_idx][2];
 		taxi_x = customer[customer_idx][3];
+		//이 승객은 탑승했다는 기록
 		fuel -= used_fuel;
+		//한번 더 검사
 		if (fuel < 0 || flag == 0)
 			break;
+		//안전하게 도착했으니 연료 충전
 		fuel += (used_fuel * 2);
 	}
-	//마지막 까지 조건 체크
-	if (fuel >= 0 && flag == 1)
+	if (fuel >= 0 && flag == 1) 
 		result = fuel;
 	return result;
 }
 
 int main(void) {
-	//맵 입력
+	//맵 정보 입력
 	scanf("%d %d %d", &n, &m, &fuel);
 	for (int y = 1; y <= n; y++) {
 		for (int x = 1; x <= n; x++) {
 			scanf("%d", &map[y][x]);
 		}
 	}
-	//택시위치
 	scanf("%d %d", &taxi_y, &taxi_x);
-	//손님정보
+	//각 승객 정보입력
 	for (int i = 1; i <= m; i++) {
 		int a, b, c, d;
 		scanf("%d %d %d %d", &a, &b, &c, &d);
@@ -164,8 +177,9 @@ int main(void) {
 		customer[i][2] = c;
 		customer[i][3] = d;
 	}
-	//시뮬레이션 실행
+
+	//시뮬레이션 시작
 	int ret = simulation();
-	printf("%d", ret);
+	printf("%d\n", ret);
 	return 0;
 }
