@@ -1,6 +1,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
 
+using namespace std;
+
 //물고기 구조체
 struct FISH {
 	//죽었으면 0, 살아있으면1
