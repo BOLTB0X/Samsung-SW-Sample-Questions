@@ -1,12 +1,12 @@
 #include <iostream>
-#include <vector>
 #include <queue>
 
 using namespace std;
 
-//¿ì¼±¼øÀ§ Å¥¸¦ À§ÇÑ ±¸Á¶Ã¼
+//ìš°ì„ ìˆœìœ„ íë¥¼ ìœ„í•œ êµ¬ì¡°ì²´
+//1ë²ˆ ì¡°ê±´
 struct INFO {
-	int y, x, block_cnt = 0, rainbow_cnt = 0;
+	int y, x, block_cnt, rainbow_cnt;
 
 	bool operator < (const INFO& i) const {
 		if (block_cnt == i.block_cnt) {
@@ -25,27 +25,28 @@ struct INFO {
 };
 
 int n, m, result;
-int board[20][20] = { 0, };
+int board[20][20];
 
 const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
 
-//ºí·Ï±×·ì Ã£±â
+//ë¸”ë¡ê·¸ë£¹ ì°¾ê¸°
+//2ë²ˆ 
 bool find_block(void) {
 	bool block_visited[20][20] = { false, };
 	priority_queue<INFO> pq;
 
-	//ºí·Ï »ı¼º
+	//ë¸”ë¡ ìƒì„±
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < n; x++) {
-			//ÀÏ¹İ ºí·Ï »ı¼º
+			//ì¼ë°˜ ë¸”ë¡ ìƒì„±
 			if (board[y][x] > 0 && !block_visited[y][x]) {
 				bool rainbow_visited[20][20] = { false, };
 				queue<pair<int, int>> q;
 				q.push({ y,x });
 				block_visited[y][x] = true;
 
-				//ÀâÀº ºí·ÏÀ¸·Î ¾î´ÀÁ¤µµ ºí·Ï±×·ìÀÌ µÇ´Â Áö È®ÀÎ
+				//ì¡ì€ ë¸”ë¡ìœ¼ë¡œ ì–´ëŠì •ë„ ë¸”ë¡ê·¸ë£¹ì´ ë˜ëŠ” ì§€ í™•ì¸
 				int block_cnt = 1, rainbow_cnt = 0;
 				while (!q.empty()) {
 					int cy = q.front().first;
@@ -59,14 +60,14 @@ bool find_block(void) {
 						if (ny < 0 || nx < 0 || ny >= n || nx >= n
 							|| block_visited[ny][nx] || rainbow_visited[ny][nx])
 							continue;
-						//·¹ÀÎº¸¿ì ºí·ÏÀÌ¸é 
+						//ë ˆì¸ë³´ìš° ë¸”ë¡ì´ë©´ 
 						if (board[ny][nx] == 0) {
 							rainbow_visited[ny][nx] = true;
 							q.push({ ny,nx });
 							block_cnt++;
 							rainbow_cnt++;
 						}
-						//ÀÏ¹İºí·ÏÀÌ¸é
+						//ì¼ë°˜ë¸”ë¡ì´ë©´
 						else if (board[ny][nx] == board[y][x]) {
 							block_visited[ny][nx] = true;
 							q.push({ ny,nx });
@@ -78,21 +79,21 @@ bool find_block(void) {
 			}
 		}
 	}
-	//ºí·Ï »ı¼ºÀÌ ¾ÈµÈ´Ù¸é
+	//ë¸”ë¡ ìƒì„±ì´ ì•ˆëœë‹¤ë©´
 	if (pq.empty())
 		return false;
-	//¿ì¼± ¼øÀ§Å¥·Î °¡Àå Å« ¼ø ºí·Ï±×·ìÀÌ Á¤·Ä‰Î
+	//ìš°ì„  ìˆœìœ„íë¡œ ê°€ì¥ í° ìˆœ ë¸”ë¡ê·¸ë£¹ì´ ì •ë ¬Â‰
 	int y = pq.top().y;
 	int x = pq.top().x;
 	int block_cnt = pq.top().block_cnt;
 
-	// ºí·Ï±æÀÌ°¡ 2º¸´Ù ÀÛ´Ù¸é
+	// ë¸”ë¡ê¸¸ì´ê°€ 2ë³´ë‹¤ ì‘ë‹¤ë©´
 	if (block_cnt < 2)
 		return false;
 
 	result += (block_cnt * block_cnt);
 
-	//»èÁ¦
+	//ì‚­ì œ
 	queue<pair<int, int>> q;
 	q.push({ y,x });
 	int block_idx = board[y][x];
@@ -119,7 +120,8 @@ bool find_block(void) {
 	return true;
 }
 
-//¾Æ·¡·Î ¶³¾îÁü
+//ì•„ë˜ë¡œ ë–¨ì–´ì§
+//3,5ë²ˆ ì¡°ê±´
 void gravity(void) {
 	for (int i = 0; i < n; i++) {
 		for (int j = n - 1; j >= 0; j--) {
@@ -137,7 +139,8 @@ void gravity(void) {
 	}
 }
 
-//¹İ½Ã°è 90µµ È¸Àü
+//ë°˜ì‹œê³„ 90ë„ íšŒì „
+//4ë²ˆ ì¡°ê±´
 void rotate(void) {
 	int tempBoard[20][20];
 	for (int y = 0; y < n; y++) {
@@ -152,7 +155,7 @@ void rotate(void) {
 	}
 }
 
-//½Ã¹Ä·¹ÀÌ¼Ç
+//ì‹œë®¬ë ˆì´ì…˜
 void simulation(void) {
 	result = 0;
 	while (true) {
@@ -166,12 +169,12 @@ void simulation(void) {
 }
 
 int main(void) {
-	//ÃÊ±âÈ­
+	//ì´ˆê¸°í™”
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
 
-	//ÀÔ·Â
+	//ì…ë ¥
 	cin >> n >> m;
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < n; x++) {
