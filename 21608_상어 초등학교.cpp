@@ -4,107 +4,136 @@
 
 using namespace std;
 
-struct INFO {
+//학생 정보들 담는 구조체
+struct STUDENT {
+	int student_idx;
 	int y;
 	int x;
-	int blank_cnt;
-	int love_cnt;
+	int love[4];
+};
 
-	bool operator < (const INFO& i) const {
+//우선 순위큐 조건 변경 및 자료형을 담는 구조체
+struct INFO {
+	int y, x;
+	int blacnk_cnt;
+	int love_cnt;
+	
+	//문제조건
+	bool operator < (const INFO &i) const {
+		//1
 		if (love_cnt == i.love_cnt) {
-			if (blank_cnt == i.blank_cnt) {
+			//2
+			if (blacnk_cnt == i.blacnk_cnt) {
+				//3
 				if (y == i.y)
 					return x > i.x;
+				//4
 				return y > i.y;
 			}
-			return blank_cnt < i.blank_cnt;
+			return blacnk_cnt < i.blacnk_cnt;
 		}
 		return love_cnt < i.love_cnt;
 	}
 };
 
-struct STUDENT {
-	int studnet_idx;
-	int love[4];
-	int y, x;
-};
-
 int n, result;
 int board[20][20];
 
+//상하좌우
 const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
+//만족도
 const int satisfy[5] = { 0,1,10,100,1000 };
 
-void setting_sit(vector<STUDENT>& students) {
+//자리 배치 --> 우선순위 큐
+void setting_sit(vector<STUDENT>& student) {
+	//벡터 부터 순회
 	for (int i = 1; i <= n * n; i++) {
 		priority_queue<INFO> pq;
+		//맵 순회
 		for (int y = 0; y < n; y++) {
 			for (int x = 0; x < n; x++) {
-				//비어있는 칸을 발견하면
-				int near_blank = 0, near_love = 0;
+				//빈 공간 발견
 				if (board[y][x] == 0) {
+					int blank = 0, love = 0;
 					for (int dir = 0; dir < 4; dir++) {
 						int ny = y + dy[dir];
 						int nx = x + dx[dir];
 
-						if (ny < 0 || nx < 0 || ny >= n || nx >= n)
+						if (ny >= n || nx >= n || ny < 0 || nx < 0)
 							continue;
+						//빈공간인 경우
 						if (board[ny][nx] == 0)
-							near_blank++;
+							blank++;
 						else {
-							for (int j = 0; j < 4; j++) {
-								if (students[i].love[j] == board[ny][nx]) {
-									near_love++;
+							//해당학생의 선호학생인지 검사
+							for (int s = 0; s < 4; s++) {
+								if (board[ny][nx] == student[i].love[s]) {
+									love++;
 									break;
 								}
 							}
 						}
+						//우선순위 큐에 삽입
 					}
-					pq.push({ y,x,near_blank,near_love });
+					pq.push({ y, x, blank, love });
 				}
 			}
 		}
+		//우선순위 큐가 비어있지 않다면
+		//자리 배치
 		if (!pq.empty()) {
-			int y = pq.top().y;
-			int x = pq.top().x;
-			int student_idx = students[i].studnet_idx;
-			board[y][x] = student_idx;
-			students[i].y = y;
-			students[i].x = x;
+			INFO cur = pq.top();
+			int y = cur.y;
+			int x = cur.x;
+			board[y][x] = student[i].student_idx;
+			//만족도 계산을 위한 위치정보 삽입
+			student[i].y = y;
+			student[i].x = x;
 		}
 	}
 	return;
 }
 
-void get_satisfy_score(vector<STUDENT>& students) {
+//만족도 점수 계산
+void get_satisfy_score(vector<STUDENT>& student) {
+	//학생벡터 순회
 	for (int i = 1; i <= n * n; i++) {
-		int y = students[i].y;
-		int x = students[i].x;
+		int cy = student[i].y;
+		int cx = student[i].x;
 		
-		int cnt = 0;
+		//그 학생의 인근 선호도 조사 
+		int love = 0;
 		for (int dir = 0; dir < 4; dir++) {
-			int ny = y + dy[dir];
-			int nx = x + dx[dir];
-
-			if (ny < 0 || nx < 0 || ny >= n || nx >= n)
+			int ny = cy + dy[dir];
+			int nx = cx + dx[dir];
+			
+			//범위 초과
+			if (ny >= n || nx >= n || ny < 0 || nx < 0)
 				continue;
-			if (board[ny][nx] != 0) {
-				for (int j = 0; j < 4; j++) {
-					if (students[i].love[j] == board[ny][nx]) {
-						cnt++;
+			//인근에 학생이 있다면
+			if (board[ny][nx] !=0) {
+				//선호학생인지 검사
+				for (int s = 0; s < 4; s++) {
+					if (board[ny][nx] == student[i].love[s]) {
+						love++;
 						break;
 					}
 				}
 			}
 		}
-		result += satisfy[cnt];
+		//만족도 점수 
+		result += satisfy[love];
 	}
+	return;
 }
 
-void simulation(vector<STUDENT> &students) {
-	setting_sit(students);
-	get_satisfy_score(students);
+void simulation(vector<STUDENT>& student) {
+	//시뮬레이션 시작
+	result = 0;
+	setting_sit(student);
+	get_satisfy_score(student);
+	return;
 }
 
 int main(void) {
@@ -114,18 +143,18 @@ int main(void) {
 	cout.tie(0);
 
 	cin >> n;
-	vector<STUDENT> students((n * n) + 1);
+	//벡터 초기화
+	vector<STUDENT> student((n * n)+1);
 	for (int i = 1; i <= n * n; i++) {
 		int a, b, c, d, e;
 		cin >> a >> b >> c >> d >> e;
-		students[i].studnet_idx = a;
-		students[i].love[0] = b;
-		students[i].love[1] = c;
-		students[i].love[2] = d;
-		students[i].love[3] = e;
+		student[i].student_idx = a;
+		student[i].love[0] = b;
+		student[i].love[1] = c;
+		student[i].love[2] = d;
+		student[i].love[3] = e;
 	}
-	result = 0;
-	simulation(students);
+	simulation(student);
 	cout << result << '\n';
 	return 0;
 }
