@@ -62,6 +62,7 @@ bool is_odd_even(int y, int x) {
 		else
 			odd_flag = true;
 	}
+	//올 홀 또는 올 짝이면 한쪽은 불 이어야함
 	if (even_flag && !odd_flag)
 		return true;
 	else if (!even_flag && odd_flag)
@@ -99,12 +100,14 @@ void fireball_update(void) {
 				int avg_speed = tot_speed / board[y][x].size();
 
 				//합쳐지는 파이어볼 방향 홀짝인지 검사
+				//전부 홀이거나 짝인 경우
 				if (is_odd_even(y, x)) {
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,0 });
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,2 });
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,4 });
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,6 });
 				}
+				//그 
 				else {
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,1 });
 					tmp_fireball.push_back({ y,x,avg_mess,avg_speed,3 });
