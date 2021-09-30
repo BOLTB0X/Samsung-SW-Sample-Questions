@@ -1,42 +1,37 @@
-#include <cstdio>
+#include <iostream>
 #include <queue>
 
 using namespace std;
 
-//상어 정의
+//상어 정보를 담는 구조체
 struct SHARK {
 	int dist, y, x;
-	//우선 순위
+
+	//문제조건
 	bool operator < (const SHARK& s) const {
-		//거리가 같을 경우
 		if (dist == s.dist) {
-			//위에도 많다면
-			if (y == s.y) {
-				//왼쪽
-				return x > s.x; //x좌표기준 오름차순
-			}
-			else
-				return y > s.y; //y좌표기준 오름차순
+			if (y == s.y)
+				return x > s.x;
+			return y > s.y;
 		}
-		else
-			return dist > s.dist; //가리기준
+		return dist > s.dist;
 	}
 };
 
 int n;
-int map[20][20];
+int board[20][20];
 bool visited[20][20];
-//상하좌우
+
+//하상좌우
 const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
 
 //초기화
 void init(priority_queue<SHARK>& pq) {
 	//방문 초기화
-	for (int y = 0; y < n; y++) 
-		for (int x = 0; x < n; x++) 
+	for (int y = 0; y < n; y++)
+		for (int x = 0; x < n; x++)
 			visited[y][x] = false;
-	//큐 초기화
 	while (!pq.empty())
 		pq.pop();
 	return;
@@ -44,66 +39,74 @@ void init(priority_queue<SHARK>& pq) {
 
 //BFS
 int BFS(priority_queue<SHARK>& pq) {
-	int shark_move = 0;
+	//초기값 세팅
+	int move = 0;
 	int shark_size = 2;
-	int shark_eat = 0;
+	int eat_cnt = 0;
 
-	while (!pq.empty()) {
+	while (!pq.empty())	{
 		SHARK cur = pq.top();
 		pq.pop();
-
-		//현재 위치에서 잡어먹을 수 있다면?
-		if (shark_size > map[cur.y][cur.x] && map[cur.y][cur.x] > 0 ) {
-			shark_eat ++;
-			map[cur.y][cur.x] = 0;
+		
+		//잡아 먹을 수 있다면 0보다 큰 조건을 걸지 않으면 빈칸도 잡아버림
+		if (shark_size > board[cur.y][cur.x] && board[cur.y][cur.x] > 0) {
+			eat_cnt++;
+			board[cur.y][cur.x] = 0;
 			//사이즈업 조건
-			if (shark_eat == shark_size) {
+			if (shark_size == eat_cnt) {
 				shark_size++;
-				shark_eat = 0;
+				eat_cnt = 0;
 			}
-			//여태 진행 과정 더해줌
-			shark_move += cur.dist;
+			//거리가 즉 총 걸린 시간이므로 더해주고
+			move += cur.dist;
+			//다 초기화
 			cur.dist = 0;
-			//초기화
 			init(pq);
 		}
-		//상하좌우기준 움직임
+		//cur위치에서 새로운 물고기를 잡기 위해 BFS탐색
 		for (int dir = 0; dir < 4; dir++) {
 			int ny = cur.y + dy[dir];
 			int nx = cur.x + dx[dir];
-			//범위 out
-			if (ny < 0 || nx < 0 || ny >= n || nx >= n)
+			
+			//범위 초과
+			if (ny >= n || nx >= n || ny < 0 || nx < 0)
 				continue;
-			//재방문 out
-			if(visited[ny][nx])
+			//재방문
+			if (visited[ny][nx])
 				continue;
-			//물고기가 크다면
-			if (map[ny][nx] > 0 && map[ny][nx] > shark_size)
+			//몸집이 크면
+			if (board[ny][nx] > shark_size)
 				continue;
-			//이동경로 또는 잡아먹을 수 있는
+			//pq삽입
 			pq.push({ cur.dist + 1,ny,nx });
 			visited[ny][nx] = true;
 		}
 	}
-	return shark_move;
+	return move;
 }
 
 int main(void) {
+	//초기화
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+
+	//입력
+	cin >> n;
 	priority_queue<SHARK> pq;
-	//행,열 입력
-	scanf("%d", &n);
-	//맵 입력
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			scanf("%d", &map[i][j]);
-			if (map[i][j] == 9) {
-				pq.push({ 0,i,j });
-				map[i][j] = 0;
+	//맵 생성
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < n; x++) {
+			cin >> board[y][x];
+			//상어 위치 찾기
+			if (board[y][x] == 9) {
+				pq.push({ 0,y,x});
+				board[y][x] = 0;
 			}
 		}
 	}
-	//BFS 시뮬레이션 시작
+	//BFS시작
 	int ret = BFS(pq);
-	printf("%d", ret);
+	cout << ret << '\n';
 	return 0;
 }
