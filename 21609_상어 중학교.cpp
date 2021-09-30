@@ -7,7 +7,7 @@ using namespace std;
 //1번 조건
 struct INFO {
 	int y, x, block_cnt, rainbow_cnt;
-
+	//우선 순위 변경
 	bool operator < (const INFO& i) const {
 		if (block_cnt == i.block_cnt) {
 			if (rainbow_cnt == i.rainbow_cnt) {
@@ -27,6 +27,7 @@ struct INFO {
 int n, m, result;
 int board[20][20];
 
+//상하좌우
 const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
 
