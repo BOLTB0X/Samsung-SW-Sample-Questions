@@ -32,7 +32,7 @@ const int dy[4] = { -1,1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
 
 //블록그룹 찾기
-//2번 
+//2번
 bool find_block(void) {
 	bool block_visited[20][20] = { false, };
 	priority_queue<INFO> pq;
