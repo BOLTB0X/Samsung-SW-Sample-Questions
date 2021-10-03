@@ -2,13 +2,13 @@
 
 using namespace std;
 
-//º§Æ®ÀÇ ÇÑ ºí·Ï
+//ë²¨íŠ¸ì˜ í•œ ë¸”ë¡
 struct BLOCK {
 	int d;
 	bool is_robot;
 };
 
-//µ¿ÀÛÀ» ÁßÁö½ÃÅ°´ÂÁö ÆÇ´Ü
+//ë™ì‘ì„ ì¤‘ì§€ì‹œí‚¤ëŠ”ì§€ íŒë‹¨
 bool is_break(int n, int k, BLOCK* belts) {
 	int zero_cnt = 0;
 	for (int i = 0; i < 2 * n; i++) {
@@ -20,12 +20,14 @@ bool is_break(int n, int k, BLOCK* belts) {
 	return false;
 }
 
-//º§Æ®¸¸ È¸ÀüÇÔ¼ö
+//ë²¨íŠ¸ë§Œ íšŒì „í•¨ìˆ˜
 void blets_rotate(int n, BLOCK* belts) {
+	//ìµœí•˜ë‹¨ ë”°ë¡œ ì €ì¥
 	BLOCK tmp = belts[2 * n-1];
 	for (int i = (2 * n) -2; i >= 0; i--) {
 		belts[i + 1] = belts[i];
 	}
+	//ìƒë‹¨ìœ¼ë¡œ ì´ë™
 	belts[0] = tmp;
 
 	if (belts[n-1].is_robot)
@@ -33,7 +35,7 @@ void blets_rotate(int n, BLOCK* belts) {
 	return;
 }
 
-//·Îº¿ ÀÌµ¿ ÇÔ¼ö
+//ë¡œë´‡ ì´ë™ í•¨ìˆ˜
 void robot_move(int n, BLOCK* belts) {
 	for (int i = n - 2; i >= 0; i--) {
 		if (belts[i].is_robot) {
@@ -49,24 +51,24 @@ void robot_move(int n, BLOCK* belts) {
 	return;
 }
 
-//·Îº¿ ¿Ã¸®±â ÇÔ¼ö
+//ë¡œë´‡ ì˜¬ë¦¬ê¸° í•¨ìˆ˜
 void robot_input(int n, BLOCK* belts) {
-	//¿Ã¸®´Â À§Ä¡¿¡ È®ÀÎ
+	//ì˜¬ë¦¬ëŠ” ìœ„ì¹˜ì— í™•ì¸
 	if (!belts[0].is_robot && belts[0].d >= 1) {
 		belts[0].is_robot = true;
 		belts[0].d --;
 	}
 }
 
-//½Ã¹Ä·¹ÀÌ¼Ç
+//ì‹œë®¬ë ˆì´ì…˜
 int simulation(int n, int k, BLOCK* belts) {
-	//ÇÃ·¹ÀÌÄ«¿îÆ® ÃÊ±âÈ­
+	//í”Œë ˆì´ì¹´ìš´íŠ¸ ì´ˆê¸°í™”
 	int play_cnt = 0;
 	while (true) {
-		//½ÃÀÛ ÈÄ ¹Ù·Î µ¿ÀÛÇÏ´Â Áö °Ë»ç
+		//ì‹œì‘ í›„ ë°”ë¡œ ë™ì‘í•˜ëŠ” ì§€ ê²€ì‚¬
 		if (is_break(n,k,belts))
 			break;
-		//ÁßÁö°¡ ¾Æ´Ï¸é Â÷·Ê·Î ¼öÇà
+		//ì¤‘ì§€ê°€ ì•„ë‹ˆë©´ ì°¨ë¡€ë¡œ ìˆ˜í–‰
 		blets_rotate(n, belts);
 		robot_move(n, belts);
 		robot_input(n, belts);
@@ -76,18 +78,18 @@ int simulation(int n, int k, BLOCK* belts) {
 }
 
 int main(void) {
-	//ÃÊ±âÈ­
+	//ì´ˆê¸°í™”
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
 	
-	//ÀÔ·Â
+	//ì…ë ¥
 	int n, k;
 	cin >> n >> k;
-	//µ¿ÀûÇÒ´ç
+	//ë™ì í• ë‹¹
 	BLOCK* belts = new BLOCK[(2 * n) ];
 	
-	//³»±¸¼º ÀÔ·Â
+	//ë‚´êµ¬ì„± ì…ë ¥
 	for (int i = 0; i < 2 * n; i++) {
 		int d;
 		cin >> d;
@@ -95,12 +97,12 @@ int main(void) {
 		belts[i].is_robot = false;
 	}
 
-	//½Ã¹Ä·¹ÀÌ¼Ç ½ÃÀÛ
+	//ì‹œë®¬ë ˆì´ì…˜ ì‹œì‘
 	int ret = simulation(n, k, belts);
-	//Á¤´ä Ãâ·Â
+	//ì •ë‹µ ì¶œë ¥
 	cout << ret << '\n';
 	
-	//¸Ş¸ğ¸® ÇØÁ¦
+	//ë©”ëª¨ë¦¬ í•´ì œ
 	delete[] belts;
 	return 0;
 }
