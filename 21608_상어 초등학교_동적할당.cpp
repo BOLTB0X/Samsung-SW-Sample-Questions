@@ -3,7 +3,7 @@
 
 using namespace std;
 
-//¿ì¼± ¼øÀ§ Å¥ Á¶°Ç º¯°æ
+//ìš°ì„  ìˆœìœ„ í ì¡°ê±´ ë³€ê²½
 struct INFO {
 	int y, x, blank, love;
 
@@ -21,7 +21,7 @@ struct INFO {
 	}
 };
 
-//ÇĞ»ı Á¤º¸µé ´ã´Â ±¸Á¶Ã¼
+//í•™ìƒ ì •ë³´ë“¤ ë‹´ëŠ” êµ¬ì¡°ì²´
 struct STUDENT {
 	int student_idx;
 	int love[4];
@@ -32,34 +32,34 @@ struct STUDENT {
 int n, result;
 int board[21][21] = { 0, };
 
-//»óÇÏÁÂ¿ì
+//ìƒí•˜ì¢Œìš°
 const int dy[4] = { 1,-1,0,0 };
 const int dx[4] = { 0,0,-1,1 };
-//¸¸Á·µµ
+//ë§Œì¡±ë„
 const int satisfy[5] = { 0,1,10,100,1000 };
 
-//ÀÚ¸®¹èÄ¡
+//ìë¦¬ë°°ì¹˜
 void setting_sit(STUDENT* students) {
-	//ÇĞ»ı¹è¿­À» ¼øÈ¸ÇÏ¸ç 
+	//í•™ìƒë°°ì—´ì„ ìˆœíšŒí•˜ë©° 
 	for (int i = 1; i <= n * n; i++) {
 		priority_queue<INFO> pq;
 		for (int y = 1; y <= n; y++) {
 			for (int x = 1; x <= n; x++) {
-				//ÇØ´çÀ§Ä¡¿¡ ÀÚ¸® ¹èÄ¡°¡ °¡´ÉÇÏ´Ù¸é
+				//í•´ë‹¹ìœ„ì¹˜ì— ìë¦¬ ë°°ì¹˜ê°€ ê°€ëŠ¥í•˜ë‹¤ë©´
 				int blank_cnt = 0, love_cnt = 0;
 				if (board[y][x] == 0) {
-					//»óÇÏÁÂ¿ì¿¡ ºó°ø°£,¼±È£ÇĞ»ı Ã¼Å©
+					//ìƒí•˜ì¢Œìš°ì— ë¹ˆê³µê°„,ì„ í˜¸í•™ìƒ ì²´í¬
 					for (int dir = 0; dir < 4; dir++) {
 						int ny = y + dy[dir];
 						int nx = x + dx[dir];
 						
-						//¹üÀ§ ÃÊ°ú
+						//ë²”ìœ„ ì´ˆê³¼
 						if (ny > n || nx > n || nx < 1 || ny < 1)
 							continue;
-						//ºó°ø°£
+						//ë¹ˆê³µê°„
 						if (board[ny][nx] == 0)
 							blank_cnt++;
-						//ÇĞ»ıÀ» º»´Ù¸é
+						//í•™ìƒì„ ë³¸ë‹¤ë©´
 						else {
 							for (int j = 0; j < 4; j++) {
 								if (board[ny][nx] == students[i].love[j]) {
@@ -69,12 +69,12 @@ void setting_sit(STUDENT* students) {
 							}
 						}
 					}
-					//¿ì¼±¼øÀ§ Å¥¿¡ »ğÀÔ
+					//ìš°ì„ ìˆœìœ„ íì— ì‚½ì…
 					pq.push({ y,x,blank_cnt,love_cnt });
 				}
 			}
 		}
-		//´ÙÀ½ ÇĞ»ıÀ¸·Î ³Ñ¾î°¡Áö Àü ¿ì¼±¼øÀ§ Å¥¿¡ ¿ø¼Ò°¡ ÀÖ´Ù¸é
+		//ë‹¤ìŒ í•™ìƒìœ¼ë¡œ ë„˜ì–´ê°€ì§€ ì „ ìš°ì„ ìˆœìœ„ íì— ì›ì†Œê°€ ìˆë‹¤ë©´
 		if (!pq.empty()) {
 			int y = pq.top().y;
 			int x = pq.top().x;
@@ -88,50 +88,52 @@ void setting_sit(STUDENT* students) {
 	return;
 }
 
-//¸¸Á·µµ °è»ê
+//ë§Œì¡±ë„ ê³„ì‚°
 void get_satisfy(STUDENT* students) {
 	for (int i = 1; i <= n * n; i++) {
 		int y = students[i].y;
 		int x = students[i].x;
 		
-		//°¢ ÇĞ»ı¸¶´Ù ÀÎ±Ù ¼±È£ÇĞ»ı Ã¼Å©
+		//ê° í•™ìƒë§ˆë‹¤ ì¸ê·¼ ì„ í˜¸í•™ìƒ ì²´í¬
 		int love = 0;
 		for (int dir = 0; dir < 4; dir++) {
 			int ny = y + dy[dir];
 			int nx = x + dx[dir];
 			
-			//¹üÀ§ Ã¼Å©
+			//ë²”ìœ„ ì²´í¬
 			if (y > n || x > n || x < 1 || y < 1)
 				continue;
-			//ÁÖº¯ ¼±È£ÇĞ»ı
+			//ì£¼ë³€ ì„ í˜¸í•™ìƒ
 			for (int j = 0; j < 4; j++) {
 				if (board[ny][nx] == students[i].love[j]) {
 					love++;
 				}
 			}
 		}
-		//¸¸Á·µµ Á¡¼ö µæÁ¡
+		//ë§Œì¡±ë„ ì ìˆ˜ ë“ì 
 		result += satisfy[love];
 	}
 	return;
 }
 
-//½Ã¹Ä·¹ÀÌ¼Ç
+//ì‹œë®¬ë ˆì´ì…˜
 void simulation(STUDENT* students) {
+	//ìë¦¬ ë°°ì •
 	setting_sit(students);
+	//ë§Œì¡±ë„ ê²€ì‚¬
 	get_satisfy(students);
 	return;
 }
 
 int main(void) {
-	//ÃÊ±âÈ­
+	//ì´ˆê¸°í™”
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
 
-	//ÀÔ·Â
+	//ì…ë ¥
 	cin >> n;
-	//n*nÅ©±â¸¸Å­ µ¿ÀÛÇÒ´ç;
+	//n*ní¬ê¸°ë§Œí¼ ë™ì‘í• ë‹¹;
 	STUDENT* students = new STUDENT[(n * n)+1];
 	for (int i = 1; i <= n * n; i++) {
 		int a, b, c, d, e;
@@ -142,12 +144,12 @@ int main(void) {
 		students[i].love[2] = d;
 		students[i].love[3] = e;
 	}
-	//°á°ú ÃÊ±âÈ­
+	//ê²°ê³¼ ì´ˆê¸°í™”
 	result = 0;
-	//½Ã¹Ä
+	//ì‹œë®¬
 	simulation(students);
 	cout << result << '\n';
-	//¸Ş¸ğ¸® ÇØÁ¦
+	//ë©”ëª¨ë¦¬ í•´ì œ
 	delete[] students;
 	return 0;
 }
