@@ -6,7 +6,7 @@ using namespace std;
 //우선 순위 큐 조건 변경
 struct INFO {
 	int y, x, blank, love;
-
+	//정렬조건 수정
 	bool operator < (const INFO& i) const {
 		if (love == i.love) {
 			if (blank == i.blank) {
@@ -101,7 +101,7 @@ void get_satisfy(STUDENT* students) {
 			int nx = x + dx[dir];
 			
 			//범위 체크
-			if (y > n || x > n || x < 1 || y < 1)
+			if (ny > n || nx > n || nx < 1 || ny < 1)
 				continue;
 			//주변 선호학생
 			for (int j = 0; j < 4; j++) {
