@@ -6,11 +6,13 @@ int n, k, l;
 int map[101][101];
 deque<pair<int, int>> snake;
 deque<pair<int, char>> dir_cmd;
-//À§ ¾Æ·¡ ÁÂ ¿ì
-const int dr[4] = { -1,1,0,0 };
+
+//ìœ„ ì•„ë˜ ì¢Œ ìš°
+const int dr[4] = { 1,-1,0,0 };
 const int dc[4] = { 0,0,-1,1 };
 int answer;
 
+//ë²”ìœ„ ì´ˆê³¼
 bool is_range(int row, int col) {
 	if (row <1 || col <1 || row >n || col >n)
 		return false;
@@ -18,26 +20,27 @@ bool is_range(int row, int col) {
 		return true;
 }
 
+//ë°©í–¥ì „
 int turn_dir(int cur_dir, char new_dir) {
-	//À§ÀÎ °æ¿ì
+	//ìœ„ì¸ ê²½ìš°
 	if (cur_dir == 0) {
 		if (new_dir == 'L')
 			return 2;
 		else
 			return 3;
-	}//¾Æ·¡ÀÎ °æ¿ì
+	}//ì•„ë˜ì¸ ê²½ìš°
 	else if (cur_dir == 1) {
 		if (new_dir == 'L')
 			return 3;
 		else
 			return 2;
-	}//ÁÂÀÎ °æ¿ì
+	}//ì¢Œì¸ ê²½ìš°
 	else if (cur_dir == 2) {
 		if (new_dir == 'L')
 			return 1;
 		else
 			return 0;
-	}//¿ìÀÎ °æ¿ì
+	}//ìš°ì¸ ê²½ìš°
 	else if (cur_dir == 3) {
 		if (new_dir == 'L')
 			return 0;
@@ -46,60 +49,65 @@ int turn_dir(int cur_dir, char new_dir) {
 	}
 }
 
+//ì‹œë®¬
 void simulation(int sec, int dir) {
-	//¹ì ÀÌµ¿ ½ÃÀÛ
+	//ë±€ ì´ë™ ì‹œì‘
 	int nr = snake.front().first + dr[dir];
 	int nc = snake.front().second + dc[dir];
-	//¹ìÀÇ À§Ä¡°¡ ¹üÀ§¸¦ ¹ş¾î³ª¸é
+	//ë±€ì˜ ìœ„ì¹˜ê°€ ë²”ìœ„ë¥¼ ë²—ì–´ë‚˜ë©´
 	if (!is_range(nr, nc)) {
 		answer = sec;
 		return;
 	}
-	//¸¸¾à ¸öÀÌ ºÎ‹HÀÎ °æ¿ì
-	//Áï µ¦ÀÇ ¿ø¼Ò¿Í °ãÄ¡´Â °æ¿ì
+	//ë§Œì•½ ëª¸ì´ ë¶€Â‹Hì¸ ê²½ìš°
+	//ì¦‰ ë±ì˜ ì›ì†Œì™€ ê²¹ì¹˜ëŠ” ê²½ìš°
 	for (int i = 0; i < snake.size(); i++) {
 		if ((nr == snake[i].first) && (nc == snake[i].second)) {
 			answer = sec;
 			return;
 		}
 	}
-	//»ç°ú¸¦ ¹ß°ßÇÑ °æ¿ì
+	//ì‚¬ê³¼ë¥¼ ë°œê²¬í•œ ê²½ìš°
 	if (map[nr][nc] == 1) {
-		map[nr][nc] = 0; //»ç°ú »èÁ¦
-		//µ¦ÀÇ ¾Õ¿¡ »ğÀÔÇÏ¿© ¹ìÀÇ ÀüÃ¼ À§Ä¡ ÀÌµ¿
+		map[nr][nc] = 0; //ì‚¬ê³¼ ì‚­ì œ
+		//ë±ì˜ ì•ì— ì‚½ì…í•˜ì—¬ ë±€ì˜ ì „ì²´ ìœ„ì¹˜ ì´ë™
 		snake.push_front({ nr,nc });
 	}
-	//»ç°ú°¡ ¾øÀ¸´Ï ²¿¸®°¡ ÀÌµ¿ÇØ¾ßÇÔ
+	//ì‚¬ê³¼ê°€ ì—†ìœ¼ë‹ˆ ê¼¬ë¦¬ê°€ ì´ë™í•´ì•¼í•¨
 	else {
 		snake.pop_back();
 		snake.push_front({ nr,nc });
 	}
-	//¸¸¾à ¸í·É¾î°¡ ¾øÀ» °æ¿ì¸¦ ´ëºñ
+	//ë§Œì•½ ëª…ë ¹ì–´ê°€ ì—†ì„ ê²½ìš°ë¥¼ ëŒ€ë¹„
 	int change_dir = dir;
-	//¸í·É¾î°¡ Á¸ÀçÇÏ°í ÇØ´ç ÃÊ°¡ µÈ´Ù¸é
+	//ëª…ë ¹ì–´ê°€ ì¡´ì¬í•˜ê³  í•´ë‹¹ ì´ˆê°€ ëœë‹¤ë©´
 	if (!dir_cmd.empty() && dir_cmd.front().first == sec) {
 		change_dir = turn_dir(dir, dir_cmd.front().second);
 		dir_cmd.pop_front();
 	}
-	//½Ã°£ Áõ°¡¿Í »õ·Î¿î ¹æÇâÀ¸·Î Àç±ÍÈ£Ãâ
+	//ì‹œê°„ ì¦ê°€ì™€ ìƒˆë¡œìš´ ë°©í–¥ìœ¼ë¡œ ì¬ê·€í˜¸ì¶œ
 	simulation(sec + 1, change_dir);
 }
 
 int main(void) {
+	//ì´ˆê¸°í™”
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
-	//¸ÊÀÇ °¡·Î,¼¼·Î ±æÀÌ
+	
+	//ë§µì˜ ê°€ë¡œ,ì„¸ë¡œ ê¸¸ì´
 	cin >> n;
-	//»ç°ú °¹¼ö
+	//ì‚¬ê³¼ ê°¯ìˆ˜
 	cin >> k;
-	//»ç°ú À§Ä¡
+	
+	//ì‚¬ê³¼ ìœ„ì¹˜
 	for (int i = 0; i < k; i++) {
 		int apple_r, apple_c;
 		cin >> apple_r >> apple_c;
 		map[apple_r][apple_c] = 1;
 	}
-	//¸í·É¾î ÀÔ·Â
+	
+	//ëª…ë ¹ì–´ ì…ë ¥
 	cin >> l;
 	for (int i = 0; i < l; i++) {
 		int x;
@@ -107,10 +115,13 @@ int main(void) {
 		cin >> x >> ch;
 		dir_cmd.push_back({ x,ch });
 	}
-	//¹ìÀÇ ÃÊ±âÀ§Ä¡
+	
+	//ë±€ì˜ ì´ˆê¸°ìœ„ì¹˜
 	snake.push_back({ 1,1 });
-	//¹ìÀÇ ÃÊ±â¹æÇâÀº ¿À¸¥ÂÊ
-	simulation(1, 3); //Ä«¿îÆ®, ¹æÇâ
+	
+	//ë±€ì˜ ì´ˆê¸°ë°©í–¥ì€ ì˜¤ë¥¸ìª½
+	simulation(1, 3); //ì¹´ìš´íŠ¸, ë°©í–¥
+	
 	cout << answer << '\n';
 	return 0;
 }
