@@ -3,22 +3,28 @@
 
 using namespace std;
 
-//행 열 결과
-int n, m, result;
-//맵
+int n, m;
 int board[8][8];
-
-//상하좌우
-const int dy[4] = { 1,-1,0,0 };
-const int dx[4] = { 0,0,-1,1 };
+int result = -1;
 
 //최대
 int max(int a, int b) {
 	return a > b ? a : b;
 }
 
-//백업
-void backup(int(*from)[8], int(*to)[8]) {
+//입력
+void input(void) {
+	cin >> n >> m;
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			cin >> board[y][x];
+		}
+	}
+	return;
+}
+
+//백업용
+void backup(int (*from)[8], int (*to)[8]) {
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < m; x++) {
 			to[y][x] = from[y][x];
@@ -27,73 +33,95 @@ void backup(int(*from)[8], int(*to)[8]) {
 	return;
 }
 
-//너비우선 탐색
-void BFS(queue<pair<int, int>>& q) {
+//바이러스 위치 탐색
+void find_virus(queue<pair<int, int>> &q, bool (*visited)[8]) {
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (board[y][x] == 2) {
+				q.push({ y,x });
+				visited[y][x] = true;
+			}
+		}
+	}
+	return;
+}
+
+//너비 우선을 이용하여 바이러스 확산
+void virus_spread(queue<pair<int, int>> &q, bool (*visited)[8]) {
+	//상하좌우
+	const int dy[4] = { 1,-1,0,0 };
+	const int dx[4] = { 0,0,-1,1 };
+
+	//큐가 비어질때까지
 	while (!q.empty()) {
 		int y = q.front().first;
 		int x = q.front().second;
 		q.pop();
-
-		//상하좡 이동
+		
+		//4방향 탐색
 		for (int dir = 0; dir < 4; dir++) {
 			int ny = y + dy[dir];
 			int nx = x + dx[dir];
+
+			//범위 초과
+			if (ny < 0 || nx < 0 || ny >= n || nx >= m)
+				continue;
+			//벽이거나 바이러스이거나 재방문인 경우
+			if (board[ny][nx] == 1 || board[ny][nx] == 2 || visited[ny][nx])
+				continue;
 			
-			//범위초과
-			if (ny >= n || nx >= m || ny < 0 || nx < 0)
-				continue;
-			//예외 케이스
-			if (board[ny][nx] == 2 || board[ny][nx] == 1)
-				continue;
-			//바이러스 처리
-			board[ny][nx] = 2;
+			//전염처리
+			board[ny][nx] = 2;			
 			q.push({ ny,nx });
+			visited[ny][nx] = true;
 		}
 	}
 }
 
-//점수 득점
-int get_score() {
-	int score = 0;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < m; j++) {
-			if (board[i][j] == 0)
-				score++;
+//안전지역 계산
+int get_safe_area(void) {
+	int cnt = 0;
+	for (int y = 0; y < n; y++) {
+		for (int x = 0; x < m; x++) {
+			if (board[y][x] == 0)
+				cnt++;
 		}
 	}
-	return score;
+	return cnt;
 }
 
-//벽세우기 --> 백트래킹
+//백트래킹을 이용한 벽 짓기
 void make_wall(int cnt) {
-	//3번 다채움 --> 정지 조건
+	//탈출 조건
 	if (cnt == 3) {
+		//백업용 맵
 		int cboard[8][8];
-		queue<pair<int, int>> q;
-		//백업
 		backup(board, cboard);
-		//바이러스 탐색
-		for (int i = 0; i < n; i++) {
-			for (int j = 0; j < m; j++) {
-				if (board[i][j] == 2) {
-					q.push({ i,j });
-				}
-			}
-		}
-		//너비우선 탐색
-		BFS(q);
-		//최댓값 참기
-		result = max(result, get_score());
+		queue<pair<int, int>> q;
+		bool visited[8][8] = { false, };
+		
+		//바이러스 위치 탐색
+		find_virus(q,visited);
+		//바이러스 BFS로 확산
+		virus_spread(q,visited);
+		//최대값인지 확인
+		result = max(result, get_safe_area());
+		//다시 백업
 		backup(cboard, board);
 		return;
 	}
-	//벽세우기 
+	
+	//완점탐색 시작
 	for (int y = 0; y < n; y++) {
 		for (int x = 0; x < m; x++) {
+			//빈공간 발견
 			if (board[y][x] == 0) {
-				cnt++;
+				//벽 짓기
 				board[y][x] = 1;
+				cnt++;
+				//호출
 				make_wall(cnt);
+				//다시 허물기
 				cnt--;
 				board[y][x] = 0;
 			}
@@ -101,28 +129,18 @@ void make_wall(int cnt) {
 	}
 }
 
-//시뮬
+//시뮬레이션
 void simulation(void) {
+	input();
 	make_wall(0);
-	return;
+	cout << result << '\n';
 }
 
 int main(void) {
-	//초기화
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	cout.tie(0);
 
-	//입력
-	cin >> n >> m;
-	for (int y = 0; y < n; y++) {
-		for (int x = 0; x < m; x++) {
-			cin >> board[y][x];
-		}
-	}
-	//시뮬레이션
 	simulation();
-	//출력
-	cout << result << '\n';
 	return 0;
 }
