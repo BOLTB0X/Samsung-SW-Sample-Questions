@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//아기 상어를 나타내는 
 struct SHARK {
 	int y, x, dist;
 
