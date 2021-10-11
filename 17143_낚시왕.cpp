@@ -5,38 +5,61 @@ using namespace std;
 
 typedef struct {
 	int s, d, z; //속력, 이동방향, 크기
-}shark;
+}SHARK;
 
 typedef struct {
 	int r, c, s, d, z;
 	//row,col,speed,dir,size;
-}shark_inf;
+}INFO;
 
-int r, c, k;
-vector<shark> map[101][101];
+int r, c, k, result;
+vector<SHARK> map[101][101];
 //상어 움직임을 저장하는 벡터
-vector<shark_inf> moving_shark;
+vector<INFO> moving_shark;
 //잡은 상어를 저장하는 벡터
-vector<shark> caught;
+vector<SHARK> caught;
+
 //위 아래 우 좌
-const int dr[4] = { -1,1,0,0 };
+const int dr[4] = { 1,-1,0,0 };
 const int dc[4] = { 0,0,1,-1 };
 
+//입력
+void input() {
+	cin >> r >> c >> k;
+	SHARK tmp_shark;
+
+	int tmp_r, tmp_c, tmp_s, tmp_d, tmp_z;
+	//맵생성 및 상어 정보입력
+	for (int i = 0; i < k; i++) {
+		cin >> tmp_r >> tmp_c >> tmp_s >> tmp_d >> tmp_z;
+		tmp_shark = { tmp_s,tmp_d - 1,tmp_z };
+		map[tmp_r - 1][tmp_c - 1].push_back(tmp_shark);
+	}
+	return;
+}
+
+//범위 체크
 bool is_range(int nr, int nc) {
 	if (nr < 0 || nc < 0 || nr >= r || nc >= c)
 		return false;
 	return true;
 }
 
+//방향전환
 int turn_dir(int d) {
-	if (d == 0) return 1;
-	else if (d == 1) return 0;
-	else if (d == 2) return 3;
-	else if (d == 3) return 2;
+	if (d == 0) 
+		return 1;
+	else if (d == 1) 
+		return 0;
+	else if (d == 2) 
+		return 3;
+	else if (d == 3) 
+		return 2;
 }
 
+//상어잡기
 void catch_shark(int king_cur) {
-	shark tmp_shark;
+	SHARK tmp_shark;
 	//낚시왕이 있는 열에 행들을 일일히 확인
 	for (int i = 0; i < r; i++) {
 		if (!map[i][king_cur].empty()) {
@@ -49,8 +72,8 @@ void catch_shark(int king_cur) {
 }
 
 //한 상어의 움직임 재귀이용
-shark_inf moving_single_shark(int row, int col, shark cur_shark) {
-	shark_inf tmp_inf;
+INFO moving_single_shark(int row, int col, SHARK cur_shark) {
+	INFO tmp_inf;
 
 	int nr = row;
 	int nc = col;
@@ -76,9 +99,9 @@ shark_inf moving_single_shark(int row, int col, shark cur_shark) {
 }
 
 //큰놈이 먼저
-shark shark_crash(vector<shark> crash) {
+SHARK shark_crash(vector<SHARK> crash) {
 	int max_z = 0;
-	shark tmp_shark = crash[0];
+	SHARK tmp_shark = crash[0];
 
 	for (int i = 0; i < crash.size(); i++) {
 		if (max_z < crash[i].z) {
@@ -93,8 +116,8 @@ void move_shark(void) {
 	//호출할때 상어의 이동이 변했으므로 초기화
 	moving_shark.clear();
 
-	shark_inf tmp_inf;
-	shark tmp_shark;
+	INFO tmp_inf;
+	SHARK tmp_shark;
 
 	//움직이는 상어들을 moving_shark 벡터에 삽입
 	for (int i = 0; i < r; i++) {
@@ -138,27 +161,28 @@ void simulation(void) {
 
 }
 
-int main(void) {
-	ios::sync_with_stdio(0);
-	cin.tie(0); cout.tie(0);
-
-	cin >> r >> c >> k;
-	shark tmp_shark;
-
-	int tmp_r, tmp_c, tmp_s, tmp_d, tmp_z;
-	int answer = 0;
-	//맵생성 및 상어 정보입력
-	for (int i = 0; i < k; i++) {
-		cin >> tmp_r >> tmp_c >> tmp_s >> tmp_d >> tmp_z;
-		tmp_shark = { tmp_s,tmp_d - 1,tmp_z };
-		map[tmp_r - 1][tmp_c - 1].push_back(tmp_shark);
-	}
-	//시뮬레이션 지작
-	simulation();
+//잡은 상어의 사이즈 계산
+void get_caught_size() {
+	int size = 0;
 	// 잡은 상어 크기의 합을 출력
 	for (int i = 0; i < caught.size(); i++) {
-		answer += caught[i].z;
+		size += caught[i].z;
 	}
-	cout << answer << '\n';
+	result = size;
+	return;
+}
+int main(void) {
+	//초기화
+	ios::sync_with_stdio(0);
+	cin.tie(0); 
+	cout.tie(0);
+
+	input();
+	result = 0;
+	//시뮬레이션 지작
+	simulation();
+	get_caught_size();
+
+	cout << result << '\n';
 	return 0;
 }
