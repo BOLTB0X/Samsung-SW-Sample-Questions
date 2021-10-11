@@ -1,39 +1,46 @@
 #include <iostream>
-#include <string>
 #include <queue>
+#include <string>
+
 using namespace std;
 
-deque<int> dq[5]; //실제 톱니바퀴 회전용
-int score = 0;
+int k, score = 0;
+//회전용 덱
+deque<int> dq[5];
 
-//점수확인 
-void get_score() {
-	int check = 1;
-	//점수방식은 2^n-1
-	for (int i = 1; i < 5; i++) {
-		if (dq[i][0] == 1)
-			score += check;
-		check *= 2;
+//입력
+void input() {
+	//4개의 톱니바퀴 정보 입력
+	for (int i = 1; i <= 4; ++i) {
+		string tmp;
+		cin >> tmp;
+		// N극은 0, S극은 1
+		for (int j = 0; j < tmp.length(); ++j) {
+			dq[i].push_back(tmp[j] - '0');
+		}
 	}
-	return;
 }
 
-void gear_rotate(queue<pair<int,int>> q) {
-	//회전정보를 담은 큐가 비어질때 까지
+//톱니바퀴 회전
+void gear_rotate(queue<pair<int, int>> q) {
+	//제일 먼저 회전이 가능한기 확인
 	while (!q.empty()) {
+		//큐의 정보 
 		int cur_idx = q.front().first;
-		int rotate = q.front().second;
+		int turn_dir = q.front().second;
 		q.pop();
-		//시계방향인 경우
-		if (rotate == 1) {
-			//가장 하단에 있던게 최상단으로 이동
+
+		//만약 방향이 시계방향이면
+		//가장 하단에 있는게 상단으로
+		if (turn_dir == 1) {
 			int tmp = dq[cur_idx].back();
 			dq[cur_idx].pop_back();
 			dq[cur_idx].push_front(tmp);
 		}
-		//반시계방향인 경우
-		else {
-			//가장 상단에 있던게 최하단으로 이동
+
+		//만약 방향이 빈시계방향이면
+		//가장 상단에 있는게 하단으로
+		else if (turn_dir == -1) {
 			int tmp = dq[cur_idx].front();
 			dq[cur_idx].pop_front();
 			dq[cur_idx].push_back(tmp);
@@ -42,35 +49,34 @@ void gear_rotate(queue<pair<int,int>> q) {
 	return;
 }
 
-void gear_rotate_check(queue<pair<int,int>> q,int gear_idx, int gear_dir) {
-	int idx = gear_idx;
-	int tmp_dir = gear_dir;
-	//큐 삽입
+//회전 가능한지 검사
+void is_rotate(queue<pair<int,int>> q, int i, int d) {
+	int idx = i;
+	int tmp_dir = d;
 	q.push({ idx,tmp_dir });
 
-	//현재 톱니바퀴의 옆 확인
+	//먼저 왼쪽에 있는 톱니바퀴 회전정보확인
 	while (true) {
 		if (idx == 4)
 			break;
 		idx++;
 		tmp_dir *= -1;
-		//회전정보를 큐에 삽입
-		//3시방향과 9시 방향이 다르면
+		//2와 6부분을 비교 회전 가능하진 회전정보를 큐에 삽입
 		if (dq[idx - 1][2] != dq[idx][6])
 			q.push({ idx,tmp_dir });
 		else
 			break;
 	}
-	idx = gear_idx;
-	tmp_dir = gear_dir;
-	//이전 확인
+	idx = i;
+	tmp_dir = d;
+
+	//이번에 오른쪽에서 왼쪽으로
 	while (true) {
 		if (idx == 1)
 			break;
 		idx--;
 		tmp_dir *= -1;
-		// 회전할 경우 큐의 정보를 삽입
-		// 9시방향과 3시방향
+		//2와 6부분을 비교 회전 가능하진 회전정보를 큐에 삽입
 		if (dq[idx + 1][6] != dq[idx][2])
 			q.push({ idx,tmp_dir });
 		else
@@ -80,35 +86,45 @@ void gear_rotate_check(queue<pair<int,int>> q,int gear_idx, int gear_dir) {
 	return;
 }
 
-int main(void) {
-	ios::sync_with_stdio(0);
-	cin.tie(0);
-	cout.tie(0);
-	
-	queue<pair<int, int>> q; //회전 정보를 탐는 큐
-	
-	string tmp_gear;
+//점수 득정
+void get_score() {
+	//점수 조건 2^n-1
+	int cnt = 1;
 	for (int i = 1; i < 5; i++) {
-		cin >> tmp_gear;
-		//톱니바퀴의 N,S극의 정보를 덱에 삽입
-		for (int j = 0; j < tmp_gear.length(); j++) {
-			dq[i].push_back(tmp_gear[j] - '0');
-		}
+		if (dq[i][0] == 1)
+			score += cnt;
+		cnt *= 2;
 	}
-	int T;
-	cin >> T;
-	while (T>0) {
+	return;
+}
+
+//시뮬레이션
+void simulation(void) {
+	input();
+	cin >> k;
+	//회전 정보용
+	queue<pair<int, int>> q;
+	while (k--) {
+		//톱니바퀴 번호, 방향 1 시계 -1 반시계
 		int gear_idx, gear_dir;
 		cin >> gear_idx >> gear_dir;
-		//진짜 회전시키기전에 체크
-		gear_rotate_check(q,gear_idx, gear_dir);
+		is_rotate(q,gear_idx, gear_dir);
 		//큐 초기화
 		while (!q.empty())
 			q.pop();
-		T--;
 	}
-	//점수확인
 	get_score();
 	cout << score << '\n';
+	return;
+}
+
+int main(void) {
+	//초기화
+	ios::sync_with_stdio(0);
+	cin.tie(0);
+	cout.tie(0);
+
+	//시뮬시작
+	simulation();
 	return 0;
 }
